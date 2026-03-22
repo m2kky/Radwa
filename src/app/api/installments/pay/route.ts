@@ -18,6 +18,12 @@ const schema = z.object({
   payment_method:  z.enum(['card', 'wallet']),
 })
 
+function normalizePhone(phone: string | null | undefined): string {
+  const digits = (phone ?? '').replace(/\D/g, '')
+  if (digits.length >= 10 && digits.length <= 15) return digits
+  return '01000000000'
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
@@ -46,14 +52,28 @@ export async function POST(req: NextRequest) {
     }
 
     const { data: authUser } = await admin.auth.admin.getUserById(user.id)
-    const email = authUser.user?.email ?? ''
-    const name  = authUser.user?.user_metadata?.name ?? 'Customer'
+    const email = authUser.user?.email
+    if (!email) {
+      return NextResponse.json(
+        { error: { code: 'PROFILE_INCOMPLETE', message: 'User email is missing' } },
+        { status: 400 }
+      )
+    }
+
+    const { data: profile } = await admin
+      .from('users')
+      .select('name, phone')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const name = (profile?.name ?? authUser.user?.user_metadata?.name ?? 'Customer').trim() || 'Customer'
+    const phone = normalizePhone(profile?.phone)
 
     const paymentData = {
       orderId:      `inst_${installment.id}`,
       amount:       installment.amount,
       currency:     installment.orders.currency,
-      customer:     { name, email, phone: '' },
+      customer:     { name, email, phone },
       productTitle: `قسط — ${installment.orders.products.title}`,
     }
 

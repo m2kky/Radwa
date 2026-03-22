@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       .select('*')
       .eq('email', email)
       .eq('code', code)
-      .eq('used_at', null)
+      .is('used_at', null)
       .gt('expires_at', new Date().toISOString())
       .maybeSingle()
 
@@ -40,13 +40,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 2. Mark OTP as used
-    await admin
-      .from('verification_otps')
-      .update({ used_at: new Date().toISOString() })
-      .eq('id', otp.id)
-
-    // 3. Create user in Supabase Auth
+    // 2. Create user in Supabase Auth
     const { data: authUser, error: authError } = await admin.auth.admin.createUser({
       email,
       password,
@@ -56,11 +50,23 @@ export async function POST(req: NextRequest) {
 
     if (authError || !authUser.user) {
       console.error('[verify-otp API] auth error:', authError)
+      if (authError?.status === 422 || authError?.message?.toLowerCase().includes('already')) {
+        return NextResponse.json(
+          { error: { code: 'USER_EXISTS', message: 'هذا البريد الإلكتروني مسجل بالفعل' } },
+          { status: 409 }
+        )
+      }
       return NextResponse.json(
         { error: { code: 'AUTH_FAILED', message: authError?.message || 'فشل إنشاء الحساب' } },
         { status: 500 }
       )
     }
+
+    // 3. Mark OTP as used
+    await admin
+      .from('verification_otps')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', otp.id)
 
     // Note: handle_new_user trigger in Postgres will auto-create the public.users record
     

@@ -16,6 +16,33 @@ const schema = z.object({
   name:  z.string().min(2),
 })
 
+async function authUserExistsByEmail(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string
+): Promise<boolean> {
+  const target = email.trim().toLowerCase()
+  const perPage = 1000
+  let page = 1
+
+  while (page <= 100) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
+    if (error) throw error
+
+    const users = data.users ?? []
+    if (users.some((u) => u.email?.trim().toLowerCase() === target)) {
+      return true
+    }
+
+    if (users.length < perPage) {
+      return false
+    }
+
+    page += 1
+  }
+
+  return false
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -24,8 +51,7 @@ export async function POST(req: NextRequest) {
     const admin = createAdminClient()
 
     // 1. Check if user already exists in auth.users
-    const { data: existingUser } = await admin.auth.admin.listUsers()
-    const userExists = existingUser.users.some((u) => u.email === email)
+    const userExists = await authUserExistsByEmail(admin, email)
 
     if (userExists) {
       return NextResponse.json(

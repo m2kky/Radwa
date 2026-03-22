@@ -12,12 +12,63 @@ import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/server'
 import { confirmPayment } from '@/lib/payments/confirm'
 
+interface PaymobSourceData {
+  pan?: string
+  sub_type?: string
+  type?: string
+}
+
+interface PaymobOrder {
+  id: string | number
+  merchant_order_id: string
+}
+
+interface PaymobTransaction {
+  amount_cents: number
+  created_at: string
+  currency: string
+  error_occured: boolean
+  has_parent_transaction: boolean
+  id: string | number
+  integration_id: string | number
+  is_3d_secure: boolean
+  is_auth: boolean
+  is_capture: boolean
+  is_refunded: boolean
+  is_standalone_payment: boolean
+  is_voided: boolean
+  order: PaymobOrder
+  owner: string | number
+  pending: boolean
+  source_data?: PaymobSourceData
+  success: boolean
+}
+
+function isPaymobTransaction(value: unknown): value is PaymobTransaction {
+  if (!value || typeof value !== 'object') return false
+
+  const tx = value as Partial<PaymobTransaction>
+  if (typeof tx.amount_cents !== 'number') return false
+  if (typeof tx.created_at !== 'string') return false
+  if (typeof tx.currency !== 'string') return false
+  if (!tx.order || typeof tx.order !== 'object') return false
+
+  const order = tx.order as Partial<PaymobOrder>
+  if (typeof order.id === 'undefined') return false
+  if (typeof order.merchant_order_id !== 'string') return false
+
+  return true
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text()
-  const hmacSecret = process.env.PAYMOB_HMAC_SECRET
+  const hmacSecret =
+    process.env.PAYMOB_HMAC_SECRET ||
+    process.env.PAYMOB_HMAC ||
+    process.env.PAYMOB_SECRET
 
   if (!hmacSecret) {
-    console.error('[paymob webhook] PAYMOB_HMAC_SECRET not set')
+    console.error('[paymob webhook] HMAC secret not set')
     return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
   }
 
@@ -27,8 +78,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing HMAC' }, { status: 401 })
   }
 
-  const payload = JSON.parse(body)
-  const obj = payload.obj
+  let payload: unknown
+  try {
+    payload = JSON.parse(body)
+  } catch {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+  }
+
+  if (!payload || typeof payload !== 'object' || !('obj' in payload)) {
+    return NextResponse.json({ error: 'Invalid payload structure' }, { status: 400 })
+  }
+
+  const obj = (payload as { obj: unknown }).obj
+  if (!isPaymobTransaction(obj)) {
+    return NextResponse.json({ error: 'Invalid payload structure' }, { status: 400 })
+  }
 
   // Paymob HMAC concatenation order (from docs)
   const hmacString = [
@@ -59,7 +123,7 @@ export async function POST(req: NextRequest) {
     .update(hmacString)
     .digest('hex')
 
-  if (expectedHmac !== receivedHmac) {
+  if (expectedHmac !== receivedHmac.toLowerCase()) {
     console.error('[paymob webhook] HMAC mismatch')
     return NextResponse.json({ error: 'Invalid HMAC' }, { status: 401 })
   }

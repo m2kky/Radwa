@@ -19,17 +19,27 @@ export async function initiatePaymob(
   data: PaymentData,
   method: 'card' | 'wallet'
 ): Promise<string> {
-  const apiKey = process.env.PAYMOB_API_KEY!
-  const integrationIdCard = process.env.PAYMOB_INTEGRATION_ID_CARD!
+  const apiKey = process.env.PAYMOB_API_KEY
+  const integrationIdCard = process.env.PAYMOB_INTEGRATION_ID_CARD
   const integrationIdWallet = process.env.PAYMOB_INTEGRATION_ID_WALLET
   const integrationId = method === 'wallet'
     ? (integrationIdWallet || integrationIdCard)
     : integrationIdCard
-  const iframeId = process.env.PAYMOB_IFRAME_ID!
+  const iframeId = process.env.PAYMOB_IFRAME_ID
 
   if (!apiKey || !integrationId || !iframeId) {
     throw new Error('Paymob environment variables not configured')
   }
+
+  const parsedIntegrationId = Number.parseInt(integrationId, 10)
+  if (Number.isNaN(parsedIntegrationId)) {
+    throw new Error('Invalid Paymob integration id')
+  }
+
+  const normalizedPhone = data.customer.phone.replace(/\D/g, '')
+  const safePhone = normalizedPhone.length >= 10 ? normalizedPhone : '01000000000'
+  const safeName = data.customer.name.trim() || 'Customer'
+  const [firstName, ...rest] = safeName.split(/\s+/)
 
   // Step 1: Auth token
   const authRes = await fetch('https://accept.paymob.com/api/auth/tokens', {
@@ -37,7 +47,11 @@ export async function initiatePaymob(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ api_key: apiKey }),
   })
-  const { token: authToken } = await authRes.json()
+  const authJson = await authRes.json().catch(() => null)
+  const authToken = authJson?.token
+  if (!authRes.ok || !authToken) {
+    throw new Error(`Paymob auth failed (${authRes.status})`)
+  }
 
   // Step 2: Create order
   const orderRes = await fetch('https://accept.paymob.com/api/ecommerce/orders', {
@@ -57,7 +71,10 @@ export async function initiatePaymob(
       }],
     }),
   })
-  const paymobOrder = await orderRes.json()
+  const paymobOrder = await orderRes.json().catch(() => null)
+  if (!orderRes.ok || !paymobOrder?.id) {
+    throw new Error(`Paymob order creation failed (${orderRes.status})`)
+  }
 
   // Store gateway order ID
   const admin = createAdminClient()
@@ -67,7 +84,6 @@ export async function initiatePaymob(
     .eq('id', data.orderId)
 
   // Step 3: Payment key
-  const [firstName, ...rest] = data.customer.name.split(' ')
   const paymentKeyRes = await fetch('https://accept.paymob.com/api/acceptance/payment_keys', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -80,7 +96,7 @@ export async function initiatePaymob(
         first_name:   firstName,
         last_name:    rest.join(' ') || firstName,
         email:        data.customer.email,
-        phone_number: data.customer.phone,
+        phone_number: safePhone,
         country:      'EG',
         city:         'NA',
         street:       'NA',
@@ -89,11 +105,15 @@ export async function initiatePaymob(
         apartment:    'NA',
       },
       currency:       data.currency,
-      integration_id: parseInt(integrationId),
+      integration_id: parsedIntegrationId,
       lock_order_when_paid: true,
     }),
   })
-  const { token: paymentToken } = await paymentKeyRes.json()
+  const paymentJson = await paymentKeyRes.json().catch(() => null)
+  const paymentToken = paymentJson?.token
+  if (!paymentKeyRes.ok || !paymentToken) {
+    throw new Error(`Paymob payment key failed (${paymentKeyRes.status})`)
+  }
 
   return `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`
 }

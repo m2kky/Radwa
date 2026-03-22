@@ -45,12 +45,9 @@ export default function SignupPage() {
         return
       }
 
-      // Encode password for transfer (simulating a "pending" account creation)
-      // In production, consider a better way to hold the password until OTP is verified.
-      // For now, we'll pass it in the query param (base64 encoded for minimal obfuscation)
-      const encodedPassword = btoa(password)
-      
-      router.push(`/verify-otp?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&p=${encodeURIComponent(encodedPassword)}`)
+      const normalizedEmail = email.trim().toLowerCase()
+      sessionStorage.setItem(`signup_password:${normalizedEmail}`, password)
+      router.push(`/verify-otp?email=${encodeURIComponent(normalizedEmail)}&name=${encodeURIComponent(name)}`)
     } catch {
       setError('فشل الاتصال بالسيرفر')
     } finally {

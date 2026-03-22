@@ -38,6 +38,20 @@ export async function GET(
     return NextResponse.json({ error: 'Download limit reached' }, { status: 410 })
   }
 
+  const files = tokenRow.products?.files
+  if (!files || files.length === 0) {
+    return NextResponse.json({ error: 'No files available' }, { status: 404 })
+  }
+
+  // 5-minute signed URL — actual file never exposed directly
+  let signedUrl: string
+  try {
+    signedUrl = await getSignedDownloadUrl(files[0].storage_path, 300)
+  } catch (error) {
+    console.error('[download] signed URL generation failed', error)
+    return NextResponse.json({ error: 'File temporarily unavailable' }, { status: 503 })
+  }
+
   // Optimistic lock — prevents race condition
   const { data: updated } = await admin
     .from('download_tokens')
@@ -50,14 +64,6 @@ export async function GET(
   if (!updated) {
     return NextResponse.json({ error: 'Download limit reached' }, { status: 410 })
   }
-
-  const files = tokenRow.products?.files
-  if (!files || files.length === 0) {
-    return NextResponse.json({ error: 'No files available' }, { status: 404 })
-  }
-
-  // 5-minute signed URL — actual file never exposed directly
-  const signedUrl = await getSignedDownloadUrl(files[0].storage_path, 300)
 
   return NextResponse.redirect(signedUrl)
 }

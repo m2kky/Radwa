@@ -22,27 +22,57 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback
 }
 
+function decodeLegacyPassword(value: string | null): string | null {
+  if (!value) return null
+  try {
+    return atob(value)
+  } catch {
+    return null
+  }
+}
+
 function VerifyOTPContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
   const email = searchParams.get('email')
   const name = searchParams.get('name')
-  const password = searchParams.get('p') // encoded or temporary
+  const legacyPassword = searchParams.get('p')
 
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
+  const [password, setPassword] = useState<string | null>(null)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    if (!email) {
+      setHydrated(true)
+      return
+    }
+
+    const normalizedEmail = email.trim().toLowerCase()
+    const stored = sessionStorage.getItem(`signup_password:${normalizedEmail}`)
+    const legacy = decodeLegacyPassword(legacyPassword)
+    setPassword(stored ?? legacy)
+    setHydrated(true)
+  }, [email, legacyPassword])
 
   // Redirect if missing params
   useEffect(() => {
-    if (!email || !name || !password) {
+    if (hydrated && (!email || !name || !password)) {
       router.push('/signup')
     }
-  }, [email, name, password, router])
+  }, [email, name, password, router, hydrated])
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault()
+    if (!email || !name || !password) {
+      toast.error('بيانات التسجيل غير مكتملة')
+      router.push('/signup')
+      return
+    }
+
     if (code.length !== 6) {
       toast.error('يرجى إدخال كود التحقق المكون من 6 أرقام')
       return
@@ -63,6 +93,8 @@ function VerifyOTPContent() {
       }
 
       toast.success('تم تفعيل حسابك بنجاح!')
+      const normalizedEmail = email.trim().toLowerCase()
+      sessionStorage.removeItem(`signup_password:${normalizedEmail}`)
       
       // Auto-login or redirect to login
       router.push('/login?verified=true')
@@ -74,6 +106,12 @@ function VerifyOTPContent() {
   }
 
   async function handleResend() {
+    if (!email || !name) {
+      toast.error('بيانات التسجيل غير مكتملة')
+      router.push('/signup')
+      return
+    }
+
     setResending(true)
     try {
       const res = await fetch('/api/auth/signup', {
