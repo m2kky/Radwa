@@ -23,7 +23,9 @@ export async function initiatePaymob(
   const integrationIdCard = process.env.PAYMOB_INTEGRATION_ID_CARD
   const integrationIdWallet = process.env.PAYMOB_INTEGRATION_ID_WALLET
   const integrationId = method === 'wallet' ? integrationIdWallet : integrationIdCard
-  const iframeId = process.env.PAYMOB_IFRAME_ID
+  const iframeIdCard = process.env.PAYMOB_IFRAME_ID
+  const iframeIdWallet = process.env.PAYMOB_IFRAME_ID_WALLET
+  const iframeId = method === 'wallet' ? (iframeIdWallet || iframeIdCard) : iframeIdCard
 
   if (!apiKey || !iframeId) {
     throw new Error('Paymob environment variables not configured')

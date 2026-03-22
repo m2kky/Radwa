@@ -25,6 +25,12 @@ const schema = z.object({
   }),
 })
 
+function fallbackNameFromEmail(email: string | null | undefined): string {
+  if (!email) return 'User'
+  const local = email.split('@')[0]?.trim()
+  return local && local.length > 0 ? local : 'User'
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -35,6 +41,30 @@ export async function POST(req: NextRequest) {
 
     // Get authenticated user if any
     const { data: { user } } = await supabase.auth.getUser()
+
+    // Ensure public.users row exists for authenticated users
+    if (user) {
+      const fallbackName = (
+        user.user_metadata?.name ||
+        fallbackNameFromEmail(user.email)
+      ).toString()
+
+      const { error: ensureUserError } = await admin
+        .from('users')
+        .upsert({
+          id: user.id,
+          name: fallbackName,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' })
+
+      if (ensureUserError) {
+        console.error('[checkout] ensure user failed:', ensureUserError)
+        return NextResponse.json(
+          { error: { code: 'PROFILE_SETUP_FAILED', message: 'Failed to initialize user profile' } },
+          { status: 500 }
+        )
+      }
+    }
 
     // Fetch product
     const { data: product, error: productError } = await admin

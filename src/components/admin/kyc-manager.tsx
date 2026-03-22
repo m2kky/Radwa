@@ -38,6 +38,13 @@ const STATUS_BADGE: Record<KycStatus, string> = {
   rejected: 'text-red-400 bg-red-400/10',
 }
 
+function getKycDocHref(pathOrUrl: string): string {
+  if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+    return pathOrUrl
+  }
+  return `/api/admin/kyc/file?path=${encodeURIComponent(pathOrUrl)}`
+}
+
 export default function KycManager({ initialRequests }: { initialRequests: KycRequest[] }) {
   const [requests, setRequests] = useState<KycRequest[]>(initialRequests)
   const [filter, setFilter] = useState<'all' | KycStatus>('pending')
@@ -142,7 +149,7 @@ export default function KycManager({ initialRequests }: { initialRequests: KycRe
                     <div className="flex flex-wrap gap-2">
                       {item.id_front_url && (
                         <a
-                          href={item.id_front_url}
+                          href={getKycDocHref(item.id_front_url)}
                           target="_blank"
                           rel="noreferrer"
                           className="px-2 py-1 rounded-md text-xs bg-white/5 border border-border text-foreground hover:bg-white/10"
@@ -152,7 +159,7 @@ export default function KycManager({ initialRequests }: { initialRequests: KycRe
                       )}
                       {item.id_back_url && (
                         <a
-                          href={item.id_back_url}
+                          href={getKycDocHref(item.id_back_url)}
                           target="_blank"
                           rel="noreferrer"
                           className="px-2 py-1 rounded-md text-xs bg-white/5 border border-border text-foreground hover:bg-white/10"
@@ -162,7 +169,7 @@ export default function KycManager({ initialRequests }: { initialRequests: KycRe
                       )}
                       {item.photo_url && (
                         <a
-                          href={item.photo_url}
+                          href={getKycDocHref(item.photo_url)}
                           target="_blank"
                           rel="noreferrer"
                           className="px-2 py-1 rounded-md text-xs bg-white/5 border border-border text-foreground hover:bg-white/10"

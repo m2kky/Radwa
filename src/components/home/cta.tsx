@@ -41,10 +41,10 @@ export default function CTA() {
           viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.7 }}
           className="flex flex-col sm:flex-row gap-6 justify-center"
         >
-          <Link href="#contact"
+          <Link href="/book"
             className="bg-cyan-glow text-cold-black text-lg px-10 py-4 rounded-full font-bold hover:bg-cyan-glow/80 hover:scale-105 transition-all shadow-[0_0_30px_rgba(250,204,21,0.4)]"
           >
-            احجز استشارة مجانية
+            احجز استشارة الآن
           </Link>
           <Link href="/shop"
             className="border border-cyan-glow/30 text-ice-white text-lg px-10 py-4 rounded-full hover:bg-cyan-glow/10 hover:border-cyan-glow/50 transition-all"

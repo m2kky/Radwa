@@ -32,6 +32,7 @@ export function CheckoutForm({ product }: { product: Product }) {
   const [method,   setMethod]   = useState<Method>('card')
   const [plan,     setPlan]     = useState<Plan>('full')
   const [couponOk, setCouponOk] = useState<number | null>(null) // discount amount
+  const [couponLoading, setCouponLoading] = useState(false)
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState<string | null>(null)
 
@@ -46,21 +47,31 @@ export function CheckoutForm({ product }: { product: Product }) {
   async function checkCoupon() {
     const code = getValues('coupon_code')
     if (!code) return
-    const res = await fetch('/api/checkout/check-coupon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: code.trim(),
-        product_id: product.id,
-        amount: product.price,
-      }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
+    setCouponLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/checkout/check-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: code.trim(),
+          product_id: product.id,
+          amount: product.price,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setCouponOk(null)
+        setError(data?.error?.message ?? 'كود الخصم غير صالح')
+        return
+      }
+      setCouponOk(typeof data?.data?.discount_amount === 'number' ? data.data.discount_amount : null)
+    } catch {
       setCouponOk(null)
-      return
+      setError('تعذر التحقق من الكوبون الآن')
+    } finally {
+      setCouponLoading(false)
     }
-    setCouponOk(typeof data?.data?.discount_amount === 'number' ? data.data.discount_amount : null)
   }
 
   async function onSubmit(values: FormData) {
@@ -127,6 +138,7 @@ export function CheckoutForm({ product }: { product: Product }) {
                 <button
                   key={p}
                   type="button"
+                  disabled={loading}
                   onClick={() => setPlan(p)}
                   className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-all ${
                     plan === p
@@ -170,6 +182,7 @@ export function CheckoutForm({ product }: { product: Product }) {
               <button
                 key={m.id}
                 type="button"
+                disabled={loading}
                 onClick={() => setMethod(m.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${
                   method === m.id
@@ -196,8 +209,16 @@ export function CheckoutForm({ product }: { product: Product }) {
             className="uppercase"
             {...register('coupon_code')}
           />
-          <Button type="button" variant="outline" onClick={checkCoupon} className="shrink-0">
-            تطبيق
+          <Button
+            type="button"
+            variant="outline"
+            onClick={checkCoupon}
+            disabled={loading || couponLoading}
+            className="shrink-0"
+          >
+            {couponLoading ? (
+              <><Loader2 className="w-4 h-4 animate-spin ml-2" /> جاري الفحص...</>
+            ) : 'تطبيق'}
           </Button>
         </div>
         {couponOk !== null && (
@@ -234,6 +255,16 @@ export function CheckoutForm({ product }: { product: Product }) {
       <p className="text-xs text-center text-muted-foreground">
         بالضغط على الدفع توافق على شروط الاستخدام. الدفع آمن ومشفر.
       </p>
+
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-cold-dark border border-border rounded-2xl p-6 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3 text-cyan-glow" />
+            <p className="text-foreground font-semibold">جاري تحويلك لبوابة الدفع</p>
+            <p className="text-sm text-muted-foreground mt-2">من فضلك لا تغلق الصفحة أو ترجع للخلف.</p>
+          </div>
+        </div>
+      )}
     </form>
   )
 }

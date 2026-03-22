@@ -21,10 +21,11 @@ const r2 = new S3Client({
  */
 export async function getSignedDownloadUrl(
   storagePath: string,
-  expiresInSeconds = 300
+  expiresInSeconds = 300,
+  bucketName?: string
 ): Promise<string> {
   const command = new GetObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: bucketName || process.env.R2_BUCKET_NAME!,
     Key:    storagePath,
   })
 
@@ -40,10 +41,11 @@ export async function getSignedDownloadUrl(
 export async function uploadToR2(
   storagePath: string,
   body: Buffer | Uint8Array,
-  contentType?: string
+  contentType?: string,
+  bucketName?: string
 ): Promise<void> {
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: bucketName || process.env.R2_BUCKET_NAME!,
     Key: storagePath,
     Body: body,
     ContentType: contentType || 'application/octet-stream',

@@ -44,10 +44,13 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="mt-10 flex gap-4"
+          className="mt-10 flex flex-wrap gap-4"
         >
-          <Link href="/shop" className="flex items-center gap-2 bg-ice-white text-cold-black font-bold px-7 py-3 rounded-full hover:bg-cyan-glow transition-colors">
-            استكشف <ArrowLeft size={16} />
+          <Link href="/book" className="flex items-center gap-2 bg-ice-white text-cold-black font-bold px-7 py-3 rounded-full hover:bg-cyan-glow transition-colors">
+            احجز استشارة <ArrowLeft size={16} />
+          </Link>
+          <Link href="/shop" className="flex items-center gap-2 border border-cyan-glow/30 text-ice-white px-7 py-3 rounded-full hover:bg-cyan-glow/10 transition-colors">
+            تصفح المتجر
           </Link>
           <Link href="/about" className="flex items-center gap-2 border border-white/20 text-ice-white px-7 py-3 rounded-full hover:bg-white/5 transition-colors">
             من أنا

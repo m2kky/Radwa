@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local portfolio workspace copy (not part of Radwa app)
+mekky/

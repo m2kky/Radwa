@@ -28,14 +28,12 @@ export default function LoginPage() {
   const [loading, setLoading]   = useState(false)
   const [justVerified, setJustVerified] = useState(false)
 
-  // UseEffect to check for 'verified' param
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-
   useEffect(() => {
-    if (searchParams?.get('verified') === 'true') {
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('verified') === 'true') {
       setJustVerified(true)
     }
-  }, [searchParams])
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

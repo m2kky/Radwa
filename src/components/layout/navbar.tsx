@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 const links = [
   { name: 'الرئيسية', href: '/' },
   { name: 'المتجر', href: '/shop' },
+  { name: 'احجزي جلسة', href: '/book' },
   { name: 'المدونة', href: '/blog' },
   { name: 'من أنا', href: '/about' },
 ]
@@ -25,7 +26,6 @@ export default function Navbar() {
   const [user, setUser] = useState<{ email?: string } | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -34,12 +34,14 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
+    const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setUser(s?.user ?? null))
     return () => subscription.unsubscribe()
   }, [])
 
   const logout = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
     router.refresh()

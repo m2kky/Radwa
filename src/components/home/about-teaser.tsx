@@ -99,13 +99,22 @@ export default function HomeAbout() {
             ))}
           </div>
 
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 border border-cyan-glow/30 text-ice-white hover:text-cyan-glow hover:border-cyan-glow px-5 py-2.5 rounded-lg text-sm transition-colors"
-          >
-            اكتشف رحلتي بالكامل
-            <ArrowLeft size={16} />
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/book"
+              className="inline-flex items-center gap-2 bg-cyan-glow text-cold-black font-bold px-5 py-2.5 rounded-lg text-sm hover:bg-cyan-glow/90 transition-colors"
+            >
+              احجز استشارة
+              <ArrowLeft size={16} />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 border border-cyan-glow/30 text-ice-white hover:text-cyan-glow hover:border-cyan-glow px-5 py-2.5 rounded-lg text-sm transition-colors"
+            >
+              اكتشف رحلتي بالكامل
+              <ArrowLeft size={16} />
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>

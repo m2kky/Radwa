@@ -12,6 +12,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getSignedDownloadUrl } from '@/lib/r2'
 
+interface R2Ref {
+  bucket: string
+  key: string
+}
+
 function isHttpUrl(value: string): boolean {
   try {
     const parsed = new URL(value)
@@ -19,6 +24,17 @@ function isHttpUrl(value: string): boolean {
   } catch {
     return false
   }
+}
+
+function parseR2Ref(value: string): R2Ref | null {
+  if (!value.startsWith('r2://')) return null
+  const trimmed = value.slice('r2://'.length)
+  const slashIndex = trimmed.indexOf('/')
+  if (slashIndex <= 0) return null
+  const bucket = trimmed.slice(0, slashIndex)
+  const key = trimmed.slice(slashIndex + 1)
+  if (!bucket || !key) return null
+  return { bucket, key }
 }
 
 export async function GET(
@@ -52,16 +68,20 @@ export async function GET(
     return NextResponse.json({ error: 'No files available' }, { status: 404 })
   }
 
-  const storagePath = files[0].storage_path
+  const storagePath = String(files[0].storage_path)
   let downloadUrl: string
 
   if (isHttpUrl(storagePath)) {
     // Allow direct external URLs (for manually hosted product files).
     downloadUrl = storagePath
   } else {
+    const r2Ref = parseR2Ref(storagePath)
+    const key = r2Ref ? r2Ref.key : storagePath
+    const bucket = r2Ref?.bucket
+
     // 5-minute signed URL — actual file never exposed directly
     try {
-      downloadUrl = await getSignedDownloadUrl(storagePath, 300)
+      downloadUrl = await getSignedDownloadUrl(key, 300, bucket)
     } catch (error) {
       console.error('[download] signed URL generation failed', error)
       return NextResponse.json({ error: 'File temporarily unavailable' }, { status: 503 })

@@ -1,0 +1,509 @@
+/* ========== Calendly-style Public Booking Page (Light Theme) ========== */
+
+/* — Container — */
+.pageWrap {
+    min-height: 100vh;
+    background: #f4f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1a1a2e;
+}
+
+/* — Event Listing (Step 1) — */
+.listingCard {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    max-width: 520px;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+.profilePhoto {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 0.75rem;
+    display: block;
+}
+.profileName {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+.profileBio {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+.divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 0 -2rem 1.5rem;
+}
+.eventItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    border: none;
+    background: none;
+    width: 100%;
+}
+.eventItem:hover {
+    background: #f9fafb;
+}
+.eventDot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+.eventItemBody {
+    flex: 1;
+}
+.eventItemTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.eventItemArrow {
+    color: #1a1a2e;
+    font-size: 0.7rem;
+}
+.eventItemDesc {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-top: 0.35rem;
+}
+
+/* — Booking Flow Card (Steps 2+3) — */
+.bookingCard {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    max-width: 960px;
+    width: 100%;
+    display: flex;
+    min-height: 580px;
+    overflow: hidden;
+}
+
+/* — Left Sidebar — */
+.sidebar {
+    width: 340px;
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    color: #4338ca;
+    margin-bottom: 1rem;
+    transition: background 0.15s;
+}
+.backBtn:hover {
+    background: #f3f4f6;
+}
+.sidebarPhoto {
+    width: 100px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin: 0 auto 1rem;
+    display: block;
+}
+.sidebarAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.25rem;
+}
+.sidebarName {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+.sidebarTitle {
+    font-size: 1.375rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+}
+.sidebarMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.35rem;
+}
+.sidebarDesc {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+/* — Main Content Area — */
+.mainContent {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+.stepHeading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+/* — Calendar Grid — */
+.calendarWrap {
+    display: flex;
+    gap: 1.5rem;
+}
+.calendarGrid {
+    flex: 1;
+}
+.monthNav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.monthLabel {
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-width: 130px;
+    text-align: center;
+}
+.monthNavBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    color: #4338ca;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.monthNavBtn:hover {
+    background: #f3f4f6;
+}
+.dayHeaders {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+.daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.dayCell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+}
+.dayAvailable {
+    composes: dayCell;
+    color: #4338ca;
+    background: rgba(67, 56, 202, 0.08);
+}
+.dayAvailable:hover {
+    background: #4338ca;
+    color: #fff;
+}
+.daySelected {
+    composes: dayCell;
+    background: #4338ca;
+    color: #fff;
+    font-weight: 700;
+}
+.dayUnavailable {
+    composes: dayCell;
+    color: #d1d5db;
+    cursor: default;
+}
+.dayEmpty {
+    composes: dayCell;
+    cursor: default;
+}
+
+/* — Time Slots Panel — */
+.timeSlotsPanel {
+    width: 200px;
+    flex-shrink: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.timeSlotsDate {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+.timeSlot {
+    display: block;
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 0.4rem;
+    border: 1px solid #4338ca;
+    border-radius: 6px;
+    background: #fff;
+    color: #4338ca;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+.timeSlot:hover {
+    background: rgba(67, 56, 202, 0.06);
+}
+.timeSlotSelected {
+    display: flex;
+    width: 100%;
+    margin-bottom: 0.4rem;
+    border-radius: 6px;
+    overflow: hidden;
+    border: none;
+}
+.timeSlotSelectedTime {
+    flex: 1;
+    padding: 0.6rem;
+    background: #6b7280;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+}
+.timeSlotNextBtn {
+    padding: 0.6rem 1rem;
+    background: #4338ca;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+}
+.timeSlotNextBtn:hover {
+    background: #3730a3;
+}
+
+/* — Timezone — */
+.timezoneBar {
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* — Details Form (Step 3) — */
+.formSection {
+    flex: 1;
+}
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.formGroup {
+    margin-bottom: 1rem;
+}
+.formLabel {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+.formInput {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #1a1a2e;
+    background: #fff;
+    transition: border-color 0.15s;
+    font-family: inherit;
+}
+.formInput:focus {
+    outline: none;
+    border-color: #4338ca;
+    box-shadow: 0 0 0 2px rgba(67, 56, 202, 0.15);
+}
+.formTextarea {
+    composes: formInput;
+    resize: vertical;
+    min-height: 70px;
+}
+.formSelect {
+    composes: formInput;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+}
+.addGuestsBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #4338ca;
+    border-radius: 50px;
+    background: #fff;
+    color: #4338ca;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 1rem;
+}
+.addGuestsBtn:hover {
+    background: rgba(67, 56, 202, 0.04);
+}
+.commMethodGroup {
+    margin-bottom: 1rem;
+}
+.commMethodLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.commOption {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+.termsText {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+.scheduleBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.5rem;
+    background: #4338ca;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.scheduleBtn:hover {
+    background: #3730a3;
+}
+.scheduleBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* — Success — */
+.successWrap {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+.successIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #22c55e;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+}
+.successTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.successSub {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* — Responsive — */
+@media (max-width: 768px) {
+    .bookingCard {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .calendarWrap {
+        flex-direction: column;
+    }
+    .timeSlotsPanel {
+        width: 100%;
+        max-height: 200px;
+    }
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+}

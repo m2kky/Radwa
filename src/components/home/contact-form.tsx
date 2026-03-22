@@ -1,7 +1,7 @@
 /**
  * ContactForm Section
  *
- * Contact form with service/budget selects — mirrors v1 ContactForm.
+ * Contact form with persistent submission to the backend.
  * Uses native HTML elements (no shadcn Form) since v2 doesn't have form/textarea components.
  *
  * @phase Phase 4 (updated): Public Pages
@@ -19,7 +19,6 @@ const schema = z.object({
   email: z.string().email(),
   company: z.string().optional(),
   service: z.string().min(1),
-  budget: z.string().optional(),
   message: z.string().min(10),
 })
 
@@ -33,6 +32,7 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const set = (k: keyof FormData, v: string) => setForm(p => ({ ...p, [k]: v }))
 
@@ -46,11 +46,22 @@ export default function ContactForm() {
       return
     }
     setErrors({})
+    setSubmitError(null)
     setLoading(true)
-    // Simulate send
-    await new Promise(r => setTimeout(r, 1500))
-    setLoading(false)
-    setSuccess(true)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result.data),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error?.message ?? 'فشل إرسال الطلب')
+      setSuccess(true)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'فشل إرسال الطلب')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (success) {
@@ -113,16 +124,6 @@ export default function ContactForm() {
           </div>
 
           <div>
-            <label className="block text-sm text-ice-white mb-1.5">الميزانية المخصصة (اختياري)</label>
-            <select value={form.budget ?? ''} onChange={e => set('budget', e.target.value)} className={selectClass}>
-              <option value="">اختر ميزانية</option>
-              <option value="silver">1,000 - 3,000 دولار</option>
-              <option value="gold">3,000 - 10,000 دولار</option>
-              <option value="platinum">أكثر من 10,000 دولار</option>
-            </select>
-          </div>
-
-          <div>
             <label className="block text-sm text-ice-white mb-1.5">الرسالة</label>
             <textarea
               value={form.message ?? ''}
@@ -133,6 +134,10 @@ export default function ContactForm() {
             />
             {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message}</p>}
           </div>
+
+          {submitError && (
+            <p className="text-red-400 text-sm">{submitError}</p>
+          )}
 
           <button type="submit" disabled={loading}
             className="w-full bg-cyan-glow text-cold-black h-12 rounded-xl text-base font-bold hover:bg-cyan-glow/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
