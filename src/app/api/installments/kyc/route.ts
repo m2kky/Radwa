@@ -36,9 +36,13 @@ async function uploadKycDocument(
   const storagePath = `kyc/${userId}/${Date.now()}-${label}-${safeName}`
   const bytes = Buffer.from(await file.arrayBuffer())
 
-  if (canUseR2()) {
-    await uploadToR2(storagePath, bytes, file.type || undefined, options.r2Bucket)
-    return `r2://${options.r2Bucket}/${storagePath}`
+  if (canUseR2() && options.r2Bucket) {
+    try {
+      await uploadToR2(storagePath, bytes, file.type || undefined, options.r2Bucket)
+      return `r2://${options.r2Bucket}/${storagePath}`
+    } catch (r2Error) {
+      console.error('[installments/kyc] R2 upload failed, falling back to Supabase Storage:', r2Error)
+    }
   }
 
   const { error } = await admin.storage
@@ -68,7 +72,10 @@ export async function POST(req: NextRequest) {
 
     const contentType = req.headers.get('content-type') || ''
     const admin = createAdminClient()
-    const r2BucketName = process.env.R2_BUCKET_KYC || 'kyc-documents'
+    const r2BucketName =
+      process.env.R2_BUCKET_KYC ||
+      process.env.R2_BUCKET_NAME ||
+      ''
     const supabaseBucketName = process.env.SUPABASE_BUCKET_KYC || 'kyc-documents'
 
     let id_front_url = ''

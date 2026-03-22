@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { initiatePaymob } from '@/lib/payments/paymob'
+import { confirmPayment } from '@/lib/payments/confirm'
 
 const schema = z.object({
   product_id:       z.string().uuid(),
@@ -165,10 +166,13 @@ export async function POST(req: NextRequest) {
     }
 
     const finalAmount = Math.max(0, product.price - discountAmount)
+    const isFreeOrder = finalAmount <= 0
 
     // Calculate installment amount
-    const installmentCount = input.installment_plan === 'full' ? 1 : parseInt(input.installment_plan)
+    const effectiveInstallmentPlan = isFreeOrder ? 'full' : input.installment_plan
+    const installmentCount = effectiveInstallmentPlan === 'full' ? 1 : parseInt(effectiveInstallmentPlan)
     const installmentAmount = parseFloat((finalAmount / installmentCount).toFixed(2))
+    const freeGatewayOrderId = isFreeOrder ? `free_${Date.now()}_${Math.random().toString(36).slice(2, 10)}` : null
 
     // Create pending order
     const { data: order, error: orderError } = await admin
@@ -184,8 +188,9 @@ export async function POST(req: NextRequest) {
         coupon_code:      input.coupon_code ?? null,
         discount_amount:  discountAmount,
         payment_method:   input.payment_method,
-        payment_gateway:  'paymob',
-        installment_plan: input.installment_plan,
+        payment_gateway:  isFreeOrder ? null : 'paymob',
+        installment_plan: effectiveInstallmentPlan,
+        gateway_order_id: freeGatewayOrderId,
         status:           'pending',
       })
       .select('id')
@@ -197,6 +202,28 @@ export async function POST(req: NextRequest) {
         { error: { code: 'ORDER_FAILED', message: 'Failed to create order' } },
         { status: 500 }
       )
+    }
+
+    if (isFreeOrder && freeGatewayOrderId) {
+      try {
+        await confirmPayment({
+          gatewayOrderId: freeGatewayOrderId,
+          gatewayTxnId: `free_${order.id}`,
+          amountCents: 0,
+        })
+      } catch (confirmError) {
+        // Order completion should not fail checkout response in free-order flow.
+        console.error('[checkout] free order confirm failed:', confirmError)
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          payment_url: `/success?order=${order.id}`,
+          order_id: order.id,
+          free: true,
+        },
+      })
     }
 
     // Initiate payment
