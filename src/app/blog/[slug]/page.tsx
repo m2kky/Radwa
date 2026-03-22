@@ -32,6 +32,15 @@ export default async function BlogPostPage({ params }: Props) {
 
   if (!post) notFound()
 
+  const imageSrc = (post.thumbnail_url ?? post.featured_image_url) as string | null
+  const safeImageSrc =
+    imageSrc &&
+    (imageSrc.startsWith('http://') ||
+      imageSrc.startsWith('https://') ||
+      imageSrc.startsWith('/'))
+      ? imageSrc
+      : null
+
   return (
     <main className="min-h-screen pt-32 pb-20">
       <article className="max-w-3xl mx-auto px-6">
@@ -45,9 +54,14 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         {/* Thumbnail */}
-        {post.thumbnail_url && (
+        {safeImageSrc && (
           <div className="relative h-72 md:h-96 rounded-2xl overflow-hidden mb-10 border border-white/10">
-            <Image src={post.thumbnail_url} alt={post.title} fill className="object-cover" />
+            <Image
+              src={safeImageSrc}
+              alt={post.title}
+              fill
+              className="object-cover"
+            />
           </div>
         )}
 

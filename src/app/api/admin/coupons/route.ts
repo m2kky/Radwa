@@ -3,7 +3,7 @@
  *
  * GET   /api/admin/coupons — list all coupons
  * POST  /api/admin/coupons — create coupon
- * PATCH /api/admin/coupons — toggle active status (body: { id, is_active })
+ * PATCH /api/admin/coupons — update coupon fields
  *
  * @auth Required (admin via middleware)
  * @phase Phase 5: Admin
@@ -27,9 +27,18 @@ const couponSchema = z.object({
   is_active: z.boolean().default(true),
 })
 
-const toggleSchema = z.object({
+const updateSchema = z.object({
   id: z.string().uuid(),
-  is_active: z.boolean(),
+  code: z.string().min(3).max(50).toUpperCase().optional(),
+  discount_type: z.enum(['percentage', 'fixed']).optional(),
+  discount_value: z.number().positive().optional(),
+  min_amount: z.number().positive().nullable().optional(),
+  max_discount: z.number().positive().nullable().optional(),
+  product_id: z.string().uuid().nullable().optional(),
+  max_uses: z.number().int().positive().nullable().optional(),
+  valid_from: z.string().datetime().optional(),
+  valid_until: z.string().datetime().nullable().optional(),
+  is_active: z.boolean().optional(),
 })
 
 export async function GET(_req: NextRequest) {
@@ -92,12 +101,32 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, is_active } = toggleSchema.parse(body)
+    const parsed = updateSchema.parse(body)
+    const { id, ...incoming } = parsed
+
+    const updates: Record<string, unknown> = {}
+    if (incoming.code !== undefined) updates.code = incoming.code.toUpperCase()
+    if (incoming.discount_type !== undefined) updates.discount_type = incoming.discount_type
+    if (incoming.discount_value !== undefined) updates.discount_value = incoming.discount_value
+    if (incoming.min_amount !== undefined) updates.min_amount = incoming.min_amount
+    if (incoming.max_discount !== undefined) updates.max_discount = incoming.max_discount
+    if (incoming.product_id !== undefined) updates.product_id = incoming.product_id
+    if (incoming.max_uses !== undefined) updates.max_uses = incoming.max_uses
+    if (incoming.valid_from !== undefined) updates.valid_from = incoming.valid_from
+    if (incoming.valid_until !== undefined) updates.valid_until = incoming.valid_until
+    if (incoming.is_active !== undefined) updates.is_active = incoming.is_active
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: { code: 'VALIDATION_ERROR', message: 'No fields to update' } },
+        { status: 400 }
+      )
+    }
 
     const supabase = createAdminClient()
     const { data, error } = await supabase
       .from('coupons')
-      .update({ is_active })
+      .update(updates)
       .eq('id', id)
       .select()
       .single()

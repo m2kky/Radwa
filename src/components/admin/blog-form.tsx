@@ -11,6 +11,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import RichTextEditor from '@/components/admin/rich-text-editor'
 
 interface FormData {
   slug: string
@@ -110,8 +111,12 @@ export default function BlogForm({ id, defaultValues = {} }: Props) {
       </div>
 
       <div>
-        <label className={labelClass}>المحتوى (HTML)</label>
-        <textarea rows={12} value={form.content} onChange={e => set('content', e.target.value)} className={`${inputClass} font-mono text-xs`} placeholder="<p>محتوى المقال...</p>" dir="ltr" />
+        <label className={labelClass}>المحتوى (Rich Text)</label>
+        <RichTextEditor
+          value={form.content}
+          onChange={(value) => set('content', value)}
+          placeholder="اكتب المحتوى هنا..."
+        />
       </div>
 
       <label className="flex items-center gap-2 cursor-pointer">

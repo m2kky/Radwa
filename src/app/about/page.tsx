@@ -13,10 +13,13 @@ import { AboutHero } from '@/components/about/about-hero'
 import { AboutFocusText } from '@/components/about/about-focus-text'
 import { AboutPhilosophy } from '@/components/about/about-philosophy'
 import { AboutStory } from '@/components/about/about-story'
+import { getSiteContentSettings } from '@/lib/site-content-server'
 
 export const metadata = { title: 'من أنا — رضوى محمد' }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const contentSettings = await getSiteContentSettings()
+
   return (
     <main className="min-h-screen bg-cold-black">
       <AboutHero />
@@ -26,7 +29,7 @@ export default function AboutPage() {
       </div>
 
       <AboutPhilosophy />
-      <AboutStory />
+      <AboutStory milestones={contentSettings.aboutMilestones} />
 
       {/* CTA */}
       <section className="py-24 relative overflow-hidden text-center">

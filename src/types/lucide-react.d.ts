@@ -41,6 +41,15 @@ declare module 'lucide-react' {
   export const Quote: LucideIcon
   export const Menu: LucideIcon
   export const X: LucideIcon
+  export const SlidersHorizontal: LucideIcon
+  export const Trash2: LucideIcon
+  export const Bold: LucideIcon
+  export const Italic: LucideIcon
+  export const List: LucideIcon
+  export const ListOrdered: LucideIcon
+  export const Link: LucideIcon
+  export const Undo: LucideIcon
+  export const Redo: LucideIcon
   export const ChevronDownIcon: LucideIcon
   export const CheckIcon: LucideIcon
   export const ChevronUpIcon: LucideIcon

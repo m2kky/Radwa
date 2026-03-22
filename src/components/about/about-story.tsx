@@ -11,15 +11,16 @@
 
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import {
+  defaultAboutMilestones,
+  type AboutStoryMilestone,
+} from '@/lib/site-content'
 
-const milestones = [
-  { year: '2018', title: 'نقطة الانطلاق', desc: 'كانت الانطلاقة في عالم التسويق الرقمي، حيث أتقنت أسرار تحسين محركات البحث (SEO)، وإدارة الحملات الإعلانية، وبناء استراتيجيات المحتوى وسط تحديات العمل المتسارعة في الوكالات التسويقية.' },
-  { year: '2020', title: 'توجيه الدفة', desc: 'خضت أولى تجاربي القيادية بإدارة فريق متنوع يضم نخبة من المصممين وكتّاب المحتوى، لنعمل معاً على إطلاق حملات تسويقية ذات أثر ملموس.' },
-  { year: '2022', title: 'الرؤية الشاملة', desc: 'أدركت مبكراً أن الإعلانات الجذابة تفقد قيمتها دون أساس قوي؛ لذا وجهت بوصلتي نحو بناء استراتيجيات شاملة للعلامات التجارية ترتكز على أهداف أعمال واضحة ومحددة.' },
-  { year: '2024', title: 'توسيع الآفاق', desc: 'بدأت مسيرتي كمستشارة مستقلة، وعقدت شراكات استراتيجية مع شركات ناشئة واعدة وعلامات تجارية كبرى في منطقة الشرق الأوسط وشمال أفريقيا وما وراءها.' },
-]
-
-export function AboutStory() {
+export function AboutStory({
+  milestones = defaultAboutMilestones,
+}: {
+  milestones?: AboutStoryMilestone[]
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start end', 'end center'] })
   const scale = useTransform(scrollYProgress, [0, 1], [2.2, 10.5])

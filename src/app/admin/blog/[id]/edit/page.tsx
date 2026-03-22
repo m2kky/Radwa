@@ -28,7 +28,7 @@ export default async function EditBlogPage({ params }: Props) {
         title:         post.title,
         excerpt:       post.excerpt ?? '',
         content:       post.content ?? '',
-        thumbnail_url: post.thumbnail_url ?? '',
+        thumbnail_url: post.thumbnail_url ?? post.featured_image_url ?? '',
         category:      post.category ?? '',
         is_featured:   post.is_featured ?? false,
         status:        post.status,

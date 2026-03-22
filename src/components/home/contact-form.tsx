@@ -27,7 +27,15 @@ type FormData = z.infer<typeof schema>
 const inputClass = 'w-full bg-white/5 border border-white/10 text-ice-white rounded-xl px-4 h-12 text-sm placeholder:text-white/20 focus:outline-none focus:border-cyan-glow/50 transition-colors'
 const selectClass = `${inputClass} cursor-pointer`
 
-export default function ContactForm() {
+interface ContactFormProps {
+  contactEmail?: string
+  contactPhone?: string
+}
+
+export default function ContactForm({
+  contactEmail,
+  contactPhone,
+}: ContactFormProps) {
   const [form, setForm] = useState<Partial<FormData>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
@@ -89,6 +97,13 @@ export default function ContactForm() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-ice-white mb-4">لنبني معاً قصة نجاحك</h2>
           <p className="text-ice-white/70 text-lg">شاركني رؤيتك أو تساؤلاتك، وسأتواصل معك في أقرب فرصة.</p>
+          {(contactEmail || contactPhone) && (
+            <p className="text-sm text-cyan-glow/80 mt-3" dir="ltr">
+              {contactEmail ? `Email: ${contactEmail}` : ''}
+              {contactEmail && contactPhone ? ' | ' : ''}
+              {contactPhone ? `Phone: ${contactPhone}` : ''}
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-cold-dark/40 backdrop-blur-md p-8 md:p-10 rounded-3xl border border-white/10">

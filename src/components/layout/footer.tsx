@@ -5,14 +5,21 @@
  * @created 2026-02-15
  */
 import Link from 'next/link'
+import type { SiteGeneralSettings } from '@/lib/site-content'
 
-export default function Footer() {
+export default function Footer({ settings }: { settings: SiteGeneralSettings }) {
   return (
     <footer className="bg-transparent py-12 border-t border-white/5">
       <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-2">
-          <Link href="/" className="font-serif text-2xl font-bold text-primary">رضوى محمد</Link>
-          <p className="mt-3 text-sm text-muted-foreground max-w-xs">أبني استراتيجيات عملية تقدم نمواً حقيقياً وقابلاً للقياس.</p>
+          <Link href="/" className="font-serif text-2xl font-bold text-primary">
+            {settings.display_name}
+          </Link>
+          <p className="mt-3 text-sm text-muted-foreground max-w-xs">{settings.tagline}</p>
+          <div className="mt-3 text-xs text-muted-foreground" dir="ltr">
+            <p>{settings.contact_email}</p>
+            <p>{settings.contact_phone}</p>
+          </div>
         </div>
         <div>
           <h3 className="font-semibold mb-3 text-sm">روابط</h3>
@@ -32,7 +39,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-6 mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
-        <span>© {new Date().getFullYear()} رضوى محمد. جميع الحقوق محفوظة.</span>
+        <span>© {new Date().getFullYear()} {settings.display_name}. جميع الحقوق محفوظة.</span>
         <Link href="https://muhammedmekky.com" target="_blank" className="hover:text-primary">طوّر بواسطة محمد مكي</Link>
       </div>
     </footer>

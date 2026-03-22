@@ -4,6 +4,7 @@ import './globals.css'
 import Navbar from '@/components/layout/navbar'
 import Footer from '@/components/layout/footer'
 import SitePopup from '@/components/layout/site-popup'
+import { getSiteContentSettings } from '@/lib/site-content-server'
 
 const tajawal = Tajawal({
   subsets: ['arabic'],
@@ -33,14 +34,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const contentSettings = await getSiteContentSettings()
+
   return (
     <html lang="ar" dir="rtl" className={`${tajawal.variable} dark`}>
       <body>
-        <Navbar />
+        <Navbar settings={contentSettings.siteGeneral} />
         <SitePopup />
         {children}
-        <Footer />
+        <Footer settings={contentSettings.siteGeneral} />
       </body>
     </html>
   )

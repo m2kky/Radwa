@@ -11,7 +11,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, ShoppingBag, Tag, FileText, ShieldCheck, LogOut, Clock } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Tag,
+  FileText,
+  ShieldCheck,
+  LogOut,
+  Clock,
+  SlidersHorizontal,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -26,6 +36,7 @@ const navItems = [
   { href: '/admin/availability', label: 'مواعيد التوفر', icon: Clock },
   { href: '/admin/bookings', label: 'الحجوزات', icon: ShoppingBag },
   { href: '/admin/booking-profile', label: 'بروفايل الحجز', icon: FileText },
+  { href: '/admin/content', label: 'محتوى الموقع', icon: SlidersHorizontal },
 ]
 
 export default function AdminSidebar() {

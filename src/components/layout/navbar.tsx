@@ -10,28 +10,41 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import type { SiteGeneralSettings } from '@/lib/site-content'
 
-const links = [
-  { name: 'الرئيسية', href: '/' },
-  { name: 'المتجر', href: '/shop' },
-  { name: 'احجزي جلسة', href: '/book' },
-  { name: 'المدونة', href: '/blog' },
-  { name: 'من أنا', href: '/about' },
-]
-
-export default function Navbar() {
+export default function Navbar({ settings }: { settings: SiteGeneralSettings }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<{ email?: string } | null>(null)
   const pathname = usePathname()
   const router = useRouter()
+  const links = [
+    { name: 'الرئيسية', href: '/' },
+    { name: 'المتجر', href: '/shop' },
+    { name: settings.booking_cta_label || 'احجزي جلسة', href: settings.booking_cta_href || '/book' },
+    { name: 'المدونة', href: '/blog' },
+    { name: 'من أنا', href: '/about' },
+  ]
+  const tickerTexts = [
+    settings.brand_name,
+    'متاحة للاستشارات',
+    settings.display_name,
+    'رؤية استراتيجية',
+    'بناء نمو',
+    settings.brand_name,
+  ]
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     const supabase = createClient()
@@ -43,6 +56,7 @@ export default function Navbar() {
   const logout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
+    setOpen(false)
     router.push('/')
     router.refresh()
   }
@@ -56,7 +70,7 @@ export default function Navbar() {
           <span className="absolute right-3 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
           <div className="h-6 overflow-hidden pr-5 w-[180px]">
             <div className="animate-text-slide flex flex-col">
-              {['Radwa.M', 'متاحة للعمل', 'لنصنع السحر', 'رؤية استراتيجية', 'عقلية النمو', 'بناء إرث', 'Radwa.M'].map((t, i) => (
+              {tickerTexts.map((t, i) => (
                 <span key={i} className="h-6 flex items-center text-ice-white font-serif font-bold text-base whitespace-nowrap leading-none">{t}</span>
               ))}
             </div>
@@ -81,30 +95,92 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile Toggle */}
-        <button onClick={() => setOpen(!open)} className="md:hidden text-ice-white p-2">
+        <button
+          onClick={() => setOpen((prev) => !prev)}
+          className="md:hidden text-ice-white p-2 rounded-lg border border-white/10 bg-cold-black/20 backdrop-blur"
+          aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
+        >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      {open && (
-        <div className="md:hidden bg-cold-black/95 backdrop-blur-xl border-b border-cyan-glow/20 px-6 py-8 flex flex-col gap-6 items-center">
-          {links.map(l => (
-            <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={`text-xl font-medium ${pathname === l.href ? 'text-cyan-glow' : 'text-ice-white hover:text-cyan-glow'}`}>
-              {l.name}
-            </Link>
-          ))}
-          <div className="w-full h-px bg-white/10" />
-          {user ? (
-            <>
-              <Link href="/dashboard" onClick={() => setOpen(false)} className="text-xl text-ice-white hover:text-cyan-glow">داشبورد</Link>
-              <button onClick={logout} className="text-xl text-red-400">خروج</button>
-            </>
-          ) : (
-            <Link href="/login" onClick={() => setOpen(false)} className="text-xl text-ice-white hover:text-cyan-glow">دخول</Link>
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.button
+              key="mobile-menu-backdrop"
+              type="button"
+              aria-label="إغلاق القائمة"
+              className="fixed inset-0 z-40 md:hidden bg-cold-black/70 backdrop-blur-md"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setOpen(false)}
+            />
+
+            <motion.div
+              key="mobile-menu-panel"
+              className="fixed top-[88px] left-4 right-4 z-50 md:hidden rounded-2xl border border-cyan-glow/20 bg-cold-black/90 backdrop-blur-2xl shadow-2xl px-6 py-6"
+              initial={{ opacity: 0, y: -18, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              <div className="flex flex-col gap-5 items-center">
+                {links.map((l, index) => (
+                  <motion.div
+                    key={l.href}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: index * 0.04, duration: 0.2 }}
+                  >
+                    <Link
+                      href={l.href}
+                      onClick={() => setOpen(false)}
+                      className={`text-xl font-medium ${
+                        pathname === l.href
+                          ? 'text-cyan-glow'
+                          : 'text-ice-white hover:text-cyan-glow'
+                      }`}
+                    >
+                      {l.name}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="w-full h-px bg-white/10 my-5" />
+
+              <div className="flex flex-col items-center gap-4">
+                {user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="text-lg text-ice-white hover:text-cyan-glow"
+                    >
+                      داشبورد
+                    </Link>
+                    <button onClick={logout} className="text-lg text-red-400">
+                      خروج
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="text-lg text-ice-white hover:text-cyan-glow"
+                  >
+                    دخول
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

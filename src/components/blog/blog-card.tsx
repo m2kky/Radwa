@@ -19,11 +19,19 @@ export interface BlogPost {
 }
 
 export default function BlogCard({ post }: { post: BlogPost }) {
+  const imageSrc =
+    post.thumbnail_url &&
+    (post.thumbnail_url.startsWith('http://') ||
+      post.thumbnail_url.startsWith('https://') ||
+      post.thumbnail_url.startsWith('/'))
+      ? post.thumbnail_url
+      : null
+
   return (
     <Link href={`/blog/${post.slug}`} className="group bg-card border border-white/10 rounded-2xl overflow-hidden hover:border-cyan-glow/30 hover:-translate-y-1 transition-all duration-300 flex flex-col">
       <div className="relative h-48 bg-cold-dark">
-        {post.thumbnail_url && (
-          <Image src={post.thumbnail_url} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        {imageSrc && (
+          <Image src={imageSrc} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
         )}
       </div>
       <div className="p-5 flex flex-col flex-1">

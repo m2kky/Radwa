@@ -42,10 +42,27 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const validated = patchSchema.parse(body)
 
     const updates: Record<string, unknown> = { ...validated }
-    if (validated.thumbnail_url === '') updates.thumbnail_url = null
-    // Set published_at when publishing for the first time
+    if (validated.thumbnail_url === '') {
+      updates.thumbnail_url = null
+      updates.featured_image_url = null
+    } else if (typeof validated.thumbnail_url === 'string') {
+      updates.featured_image_url = validated.thumbnail_url
+    }
+
+    // Set published_at only when publishing for first time.
     if (validated.status === 'published') {
-      updates.published_at = new Date().toISOString()
+      const admin = createAdminClient()
+      const { data: existing } = await admin
+        .from('blog_posts')
+        .select('published_at')
+        .eq('id', id)
+        .single()
+      if (!existing?.published_at) {
+        updates.published_at = new Date().toISOString()
+      }
+    }
+    if (validated.status === 'draft') {
+      updates.published_at = null
     }
 
     const admin = createAdminClient()

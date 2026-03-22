@@ -20,6 +20,7 @@ import FeaturedProducts from '@/components/home/featured-products'
 import Testimonials from '@/components/home/testimonials'
 import CTA from '@/components/home/cta'
 import ContactForm from '@/components/home/contact-form'
+import { getSiteContentSettings } from '@/lib/site-content-server'
 
 export const metadata = {
   title: 'Radwa Muhammed | استراتيجية • تسويق • محتوى',
@@ -29,21 +30,41 @@ export const metadata = {
 export default async function Home() {
   const supabase = await createClient()
 
-  const [{ data: products }, { data: posts }] = await Promise.all([
+  const [{ data: products }, { data: posts }, contentSettings] = await Promise.all([
     supabase.from('products').select('id, slug, title, description, thumbnail_url, price, compare_at_price, currency, installments_enabled').eq('is_featured', true).eq('status', 'published').limit(3),
-    supabase.from('blog_posts').select('id, slug, title, category, published_at, featured_image_url').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
+    supabase
+      .from('blog_posts')
+      .select('id, slug, title, category, published_at, featured_image_url, thumbnail_url')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(3),
+    getSiteContentSettings(),
   ])
+
+  const normalizedPosts = (posts ?? []).map((post) => ({
+    ...post,
+    category: post.category ?? '',
+    featured_image_url: post.featured_image_url ?? post.thumbnail_url ?? '',
+  }))
 
   return (
     <div className="flex flex-col w-full">
       <Hero />
       <HomeAbout />
       <StrategyWheel />
-      <Timeline />
+      <Timeline content={contentSettings.homeTimeline} />
       <FeaturedProducts products={products ?? []} />
-      <Testimonials blogPosts={posts ?? []} />
+      <Testimonials
+        blogPosts={normalizedPosts}
+        testimonials={contentSettings.homeTestimonials}
+        title={contentSettings.siteGeneral.testimonials_title}
+        subtitle={contentSettings.siteGeneral.testimonials_subtitle}
+      />
       <CTA />
-      <ContactForm />
+      <ContactForm
+        contactEmail={contentSettings.siteGeneral.contact_email}
+        contactPhone={contentSettings.siteGeneral.contact_phone}
+      />
     </div>
   )
 }

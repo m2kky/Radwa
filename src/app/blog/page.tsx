@@ -12,16 +12,33 @@ export const metadata = { title: 'المدونة' }
 export default async function BlogPage() {
   const admin = createAdminClient()
 
-  interface Post { id: string; slug: string; title: string; excerpt: string | null; thumbnail_url: string | null; category: string | null; published_at: string; is_featured?: boolean }
+  interface Post {
+    id: string
+    slug: string
+    title: string
+    excerpt: string | null
+    thumbnail_url: string | null
+    featured_image_url: string | null
+    category: string | null
+    published_at: string
+    is_featured?: boolean
+  }
 
   const { data: posts } = await admin
     .from('blog_posts')
-    .select('id, slug, title, excerpt, thumbnail_url, category, published_at, is_featured')
+    .select('id, slug, title, excerpt, thumbnail_url, featured_image_url, category, published_at, is_featured')
     .eq('status', 'published')
     .order('published_at', { ascending: false }) as { data: Post[] | null }
 
-  const featured = posts?.find((p: Post) => p.is_featured) ?? posts?.[0]
-  const rest = posts?.filter((p: Post) => p.id !== featured?.id) ?? []
+  const normalizedPosts =
+    posts?.map((post) => ({
+      ...post,
+      thumbnail_url: post.thumbnail_url ?? post.featured_image_url,
+      published_at: post.published_at ?? new Date().toISOString(),
+    })) ?? []
+
+  const featured = normalizedPosts.find((p: Post) => p.is_featured) ?? normalizedPosts[0]
+  const rest = normalizedPosts.filter((p: Post) => p.id !== featured?.id)
 
   return (
     <main className="min-h-screen pt-32 pb-20 px-6">
@@ -49,7 +66,7 @@ export default async function BlogPage() {
           </div>
         )}
 
-        {!posts?.length && (
+        {!normalizedPosts.length && (
           <p className="text-center text-muted-foreground py-20">لا توجد مقالات بعد.</p>
         )}
       </div>

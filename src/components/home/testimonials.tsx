@@ -14,26 +14,31 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Quote, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-
-const testimonials = [
-  { id: 1, text: 'أعادت رضوى تشكيل استراتيجيتنا التسويقية بالكامل، ونجحنا في تحقيق قفزة ملحوظة في النمو خلال 3 أشهر فقط.', author: 'Sarah J.', role: 'المدير التنفيذي – TechStart' },
-  { id: 2, text: 'تتمتع بقدرة استثنائية على خلق رؤية واضحة من وسط الفوضى. أوصي بها بشدة لأي شركة تطمح للتوسع بذكاء.', author: 'Mark T.', role: 'مؤسس – GrowthOps' },
-  { id: 3, text: 'النماذج التي تقدمها بمثابة كنز حقيقي لأي فريق عمل، فهي تجمع بين البساطة والفعالية العالية.', author: 'Elena R.', role: 'مديرة التسويق' },
-  { id: 4, text: 'بفضل الأنظمة التشغيلية التي صممتها لنا، نجحنا في توفير أكثر من 20 ساعة أسبوعياً.', author: 'David K.', role: 'رئيس العمليات – ScaleUp' },
-  { id: 5, text: 'نجحنا في مضاعفة معدلات التحويل بعد تطبيق منهجيتها الخاصة في صناعة المحتوى.', author: 'Anita P.', role: 'مؤسسة – CreativeFlow' },
-  { id: 6, text: 'أخيراً وجدنا استراتيجية تُترجم إلى أفعال على أرض الواقع. كان العائد على الاستثمار فورياً والأهم أنه مستدام.', author: 'James L.', role: 'مدير التسويق – FinTech' },
-]
+import {
+  defaultHomeTestimonials,
+  type PartnerTestimonial,
+} from '@/lib/site-content'
 
 interface BlogPost {
   id: string
   title: string
-  category: string
+  category: string | null
   published_at: string
   featured_image_url: string
   slug: string
 }
 
-export default function Testimonials({ blogPosts = [] }: { blogPosts?: BlogPost[] }) {
+export default function Testimonials({
+  blogPosts = [],
+  testimonials = defaultHomeTestimonials,
+  title = 'شركاء النجاح',
+  subtitle = 'آراء وتجارب بعض الشركات ورواد الأعمال الذين سارت معهم في رحلة النمو.',
+}: {
+  blogPosts?: BlogPost[]
+  testimonials?: PartnerTestimonial[]
+  title?: string
+  subtitle?: string
+}) {
   const [hoveredPost, setHoveredPost] = useState<string | null>(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -43,7 +48,14 @@ export default function Testimonials({ blogPosts = [] }: { blogPosts?: BlogPost[
     setHoveredPost(postId)
   }
 
-  const hoveredImage = blogPosts.find(p => p.id === hoveredPost)?.featured_image_url
+  const hoveredImageRaw = blogPosts.find(p => p.id === hoveredPost)?.featured_image_url
+  const hoveredImage =
+    hoveredImageRaw &&
+    (hoveredImageRaw.startsWith('http://') ||
+      hoveredImageRaw.startsWith('https://') ||
+      hoveredImageRaw.startsWith('/'))
+      ? hoveredImageRaw
+      : null
   const hoveredTitle = blogPosts.find(p => p.id === hoveredPost)?.title
 
   return (
@@ -53,8 +65,8 @@ export default function Testimonials({ blogPosts = [] }: { blogPosts?: BlogPost[
         {/* Testimonials col */}
         <div className="w-full md:w-3/5 flex flex-col gap-8">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
-            <h2 className="text-4xl md:text-6xl font-serif font-bold text-ice-white mb-2">شركاء النجاح</h2>
-            <p className="text-cyan-glow/60 text-lg">آراء وتجارب بعض الشركات ورواد الأعمال الذين سارت معهم في رحلة النمو.</p>
+            <h2 className="text-4xl md:text-6xl font-serif font-bold text-ice-white mb-2">{title}</h2>
+            <p className="text-cyan-glow/60 text-lg">{subtitle}</p>
           </motion.div>
 
           <div className="space-y-6">
@@ -101,7 +113,7 @@ export default function Testimonials({ blogPosts = [] }: { blogPosts?: BlogPost[
                     {post.published_at ? new Date(post.published_at).toLocaleDateString('ar-EG') : ''}
                   </span>
                   <span className="text-xs uppercase tracking-wider text-cyan-glow/80 bg-cyan-glow/10 px-2 py-0.5 rounded-full">
-                    {post.category}
+                    {post.category ?? 'Blog'}
                   </span>
                 </div>
                 <p className="text-base font-medium text-ice-white group-hover:text-cyan-glow transition-colors line-clamp-2">

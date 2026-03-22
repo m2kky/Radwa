@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
       .insert({
         ...validated,
         thumbnail_url: validated.thumbnail_url || null,
+        featured_image_url: validated.thumbnail_url || null,
         published_at:  validated.status === 'published' ? new Date().toISOString() : null,
       })
       .select()
