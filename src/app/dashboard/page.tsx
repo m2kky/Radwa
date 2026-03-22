@@ -18,6 +18,15 @@ import InstallmentPayButton from '@/components/features/installment-pay-button'
 
 export const metadata = { title: 'مشترياتي' }
 
+function getCairoDateString(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,12 +40,14 @@ export default async function DashboardPage() {
     created_at: string
     paid_amount: number
     installment_plan: string
+    status: string
     products: { title: string } | { title: string }[] | null
     download_tokens: { token: string; expires_at: string | null }[]
   }
 
   interface InstallmentRow {
     id: string
+    order_id: string
     amount: number
     due_date: string
     status: string
@@ -51,17 +62,17 @@ export default async function DashboardPage() {
 
   const ordersQuery = admin
       .from('orders')
-      .select('id, created_at, paid_amount, installment_plan, products(title), download_tokens(token, expires_at)')
+      .select('id, created_at, paid_amount, installment_plan, status, products(title), download_tokens(token, expires_at)')
       .eq('user_id', user.id)
-      .eq('status', 'completed')
+      .in('status', ['completed', 'suspended'])
       .order('created_at', { ascending: false })
       .returns<OrderRow[]>()
 
   const installmentsQuery = admin
       .from('installment_payments')
-      .select('id, amount, due_date, status, orders(products(title))')
+      .select('id, order_id, amount, due_date, status, orders(products(title))')
       .eq('user_id', user.id)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'overdue'])
       .order('due_date', { ascending: true })
       .returns<InstallmentRow[]>()
 
@@ -73,6 +84,12 @@ export default async function DashboardPage() {
 
   const installmentStatus = profile?.installment_status ?? 'none'
   const rejectionReason = profile?.rejection_reason
+  const today = getCairoDateString()
+  const blockedOrderIds = new Set(
+    (installments ?? [])
+      .filter((inst) => inst.status === 'overdue' || inst.due_date < today)
+      .map((inst) => inst.order_id)
+  )
 
   return (
     <main className="container max-w-3xl mx-auto px-4 py-12 space-y-10">
@@ -106,14 +123,20 @@ export default async function DashboardPage() {
             const installmentProduct = inst.orders
               ? (Array.isArray(inst.orders.products) ? inst.orders.products[0] : inst.orders.products)
               : null
+            const isOverdue = inst.status === 'overdue' || inst.due_date < today
 
             return (
-              <div key={inst.id} className="bg-card border border-primary/30 rounded-lg p-4 flex items-center justify-between gap-4">
+              <div key={inst.id} className={`bg-card rounded-lg p-4 flex items-center justify-between gap-4 ${
+                isOverdue ? 'border border-red-500/40' : 'border border-primary/30'
+              }`}>
                 <div className="space-y-1">
                   <p className="font-medium">{installmentProduct?.title ?? '—'}</p>
                   <p className="text-sm text-muted-foreground">
                     {inst.amount} ج.م · تاريخ الاستحقاق: {new Date(inst.due_date).toLocaleDateString('ar-EG')}
                   </p>
+                  {isOverdue && (
+                    <p className="text-xs text-red-400">متأخر السداد - تم إيقاف التحميل مؤقتًا حتى الدفع</p>
+                  )}
                 </div>
                 <InstallmentPayButton installmentId={inst.id} amount={inst.amount} />
               </div>
@@ -135,6 +158,9 @@ export default async function DashboardPage() {
           orders.map(order => {
             const product = Array.isArray(order.products) ? order.products[0] : order.products
             const permanentToken = order.download_tokens?.find(t => t.expires_at === null)
+            const isLockedByInstallment =
+              order.installment_plan !== 'full' &&
+              (blockedOrderIds.has(order.id) || order.status === 'suspended')
             return (
               <div key={order.id} className="bg-card border border-border rounded-lg p-5 flex items-center justify-between gap-4">
                 <div className="space-y-1">
@@ -145,11 +171,18 @@ export default async function DashboardPage() {
                       <span className="mr-2 text-primary">· أقساط ({order.installment_plan})</span>
                     )}
                   </p>
+                  {isLockedByInstallment && (
+                    <p className="text-xs text-red-400">المنتج مقفول مؤقتًا لوجود قسط متأخر</p>
+                  )}
                 </div>
-                {permanentToken ? (
+                {permanentToken && !isLockedByInstallment ? (
                   <a href={`/download/${permanentToken.token}`}>
                     <Button size="sm">تحميل</Button>
                   </a>
+                ) : isLockedByInstallment ? (
+                  <Button size="sm" variant="outline" disabled>
+                    مقفول لحين السداد
+                  </Button>
                 ) : (
                   <span className="text-xs text-muted-foreground">لا يوجد ملف</span>
                 )}

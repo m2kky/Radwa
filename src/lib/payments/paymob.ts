@@ -12,6 +12,20 @@ interface PaymentData {
   productTitle: string
 }
 
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.startsWith('20') && digits.length === 12) {
+    return `0${digits.slice(2)}`
+  }
+  if (digits.startsWith('2') && digits.length === 12) {
+    return `0${digits.slice(1)}`
+  }
+  if (digits.startsWith('01') && digits.length === 11) {
+    return digits
+  }
+  return digits.length >= 10 ? digits : '01000000000'
+}
+
 /**
  * Creates a Paymob order and returns the iframe payment URL
  */
@@ -24,11 +38,14 @@ export async function initiatePaymob(
   const integrationIdWallet = process.env.PAYMOB_INTEGRATION_ID_WALLET
   const integrationId = method === 'wallet' ? integrationIdWallet : integrationIdCard
   const iframeIdCard = process.env.PAYMOB_IFRAME_ID
-  const iframeIdWallet = process.env.PAYMOB_IFRAME_ID_WALLET
-  const iframeId = method === 'wallet' ? iframeIdWallet : iframeIdCard
+  const iframeId = iframeIdCard
 
-  if (!apiKey || !iframeId) {
+  if (!apiKey) {
     throw new Error('Paymob environment variables not configured')
+  }
+
+  if (method === 'card' && !iframeId) {
+    throw new Error('Paymob card iframe id not configured')
   }
 
   if (!integrationId) {
@@ -40,12 +57,7 @@ export async function initiatePaymob(
     throw new Error('Invalid Paymob integration id')
   }
 
-  if (method === 'wallet' && iframeIdCard && iframeId === iframeIdCard) {
-    throw new Error('Wallet must use a dedicated PAYMOB_IFRAME_ID_WALLET')
-  }
-
-  const normalizedPhone = data.customer.phone.replace(/\D/g, '')
-  const safePhone = normalizedPhone.length >= 10 ? normalizedPhone : '01000000000'
+  const safePhone = normalizePhone(data.customer.phone)
   const safeName = data.customer.name.trim() || 'Customer'
   const [firstName, ...rest] = safeName.split(/\s+/)
 
@@ -121,6 +133,44 @@ export async function initiatePaymob(
   const paymentToken = paymentJson?.token
   if (!paymentKeyRes.ok || !paymentToken) {
     throw new Error(`Paymob payment key failed (${paymentKeyRes.status})`)
+  }
+
+  if (method === 'wallet') {
+    // Wallet flow in Paymob does not use iframe.
+    // It requires the wallet mobile number and returns a redirect URL.
+    const walletRes = await fetch('https://accept.paymob.com/api/acceptance/payments/pay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: {
+          identifier: safePhone,
+          subtype: 'WALLET',
+        },
+        payment_token: paymentToken,
+      }),
+    })
+
+    const walletJson = await walletRes.json().catch(() => null)
+    const redirectUrl =
+      walletJson?.redirect_url ??
+      walletJson?.redirection_url ??
+      walletJson?.iframe_redirection_url ??
+      walletJson?.data?.redirect_url ??
+      walletJson?.data?.redirection_url ??
+      null
+
+    if (!walletRes.ok || !redirectUrl) {
+      const walletMessage =
+        walletJson?.message ??
+        walletJson?.['data.message'] ??
+        walletJson?.error ??
+        ''
+      throw new Error(
+        `Paymob wallet pay failed (${walletRes.status})${walletMessage ? `: ${walletMessage}` : ''}`
+      )
+    }
+
+    return redirectUrl
   }
 
   return `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`

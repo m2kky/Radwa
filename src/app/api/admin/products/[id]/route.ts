@@ -25,7 +25,7 @@ const updateSchema = z.object({
   type: z.enum(['course', 'digital']).optional(),
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  thumbnail_url: z.string().url().optional().nullable(),
+  thumbnail_url: z.string().trim().min(1).optional().nullable(),
   price: z.number().positive().optional(),
   compare_at_price: z.number().positive().optional().nullable(),
   installments_enabled: z.boolean().optional(),

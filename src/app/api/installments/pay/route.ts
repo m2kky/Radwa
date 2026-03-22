@@ -1,7 +1,7 @@
 /**
  * Installment Payment API
  *
- * Initiates payment for the next pending installment.
+ * Initiates payment for a payable installment (pending or overdue).
  * Supports Paymob only (card/wallet).
  *
  * @endpoint POST /api/installments/pay
@@ -20,8 +20,9 @@ const schema = z.object({
 
 function normalizePhone(phone: string | null | undefined): string {
   const digits = (phone ?? '').replace(/\D/g, '')
+  if (digits.startsWith('20') && digits.length === 12) return `0${digits.slice(2)}`
   if (digits.length >= 10 && digits.length <= 15) return digits
-  return '01000000000'
+  return ''
 }
 
 export async function POST(req: NextRequest) {
@@ -38,13 +39,13 @@ export async function POST(req: NextRequest) {
 
     const admin = createAdminClient()
 
-    // Fetch installment — must belong to this user and be pending
+    // Fetch installment — must belong to this user and be payable (pending or overdue)
     const { data: installment } = await admin
       .from('installment_payments')
       .select('*, orders(id, currency, products(title))')
       .eq('id', installment_id)
       .eq('user_id', user.id)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'overdue'])
       .single()
 
     if (!installment) {
@@ -68,12 +69,23 @@ export async function POST(req: NextRequest) {
 
     const name = (profile?.name ?? authUser.user?.user_metadata?.name ?? 'Customer').trim() || 'Customer'
     const phone = normalizePhone(profile?.phone)
+    if (payment_method === 'wallet' && !phone) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'PHONE_REQUIRED',
+            message: 'رقم الموبايل مطلوب للدفع بالمحفظة. حدّث رقمك في الحساب ثم أعد المحاولة.',
+          },
+        },
+        { status: 400 }
+      )
+    }
 
     const paymentData = {
       orderId:      `inst_${installment.id}`,
       amount:       installment.amount,
       currency:     installment.orders.currency,
-      customer:     { name, email, phone },
+      customer:     { name, email, phone: phone || '01000000000' },
       productTitle: `قسط — ${installment.orders.products.title}`,
     }
 

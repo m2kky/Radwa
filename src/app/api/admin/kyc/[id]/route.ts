@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
+import { sendKycStatusEmail } from '@/lib/email'
 
 const paramsSchema = z.object({
   id: z.string().uuid(),
@@ -63,6 +64,23 @@ export async function PATCH(req: NextRequest, { params }: Context) {
         { error: { code: 'NOT_FOUND', message: 'User not found' } },
         { status: 404 }
       )
+    }
+
+    try {
+      const { data: authData } = await admin.auth.admin.getUserById(id)
+      const email = authData.user?.email
+      if (email) {
+        void sendKycStatusEmail({
+          to: email,
+          name: data.name || undefined,
+          status: body.status,
+          reason: body.status === 'rejected' ? body.rejection_reason : null,
+        }).catch((emailError) => {
+          console.error('[Admin KYC PATCH] status email failed:', emailError)
+        })
+      }
+    } catch (lookupError) {
+      console.error('[Admin KYC PATCH] user lookup failed for email:', lookupError)
     }
 
     return NextResponse.json({ success: true, data })

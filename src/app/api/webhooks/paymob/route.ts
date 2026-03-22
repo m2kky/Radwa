@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/server'
 import { confirmPayment } from '@/lib/payments/confirm'
+import { sendInstallmentPaidEmail } from '@/lib/email'
 
 interface PaymobSourceData {
   pan?: string
@@ -58,6 +59,15 @@ function isPaymobTransaction(value: unknown): value is PaymobTransaction {
   if (typeof order.merchant_order_id !== 'string') return false
 
   return true
+}
+
+function getCairoDateString(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
 }
 
 export async function POST(req: NextRequest) {
@@ -140,7 +150,7 @@ export async function POST(req: NextRequest) {
   if (merchantOrderId.startsWith('inst_')) {
     const installmentId = merchantOrderId.replace('inst_', '')
 
-    await admin
+    const { data: installmentRow } = await admin
       .from('installment_payments')
       .update({
         status:          'paid',
@@ -149,7 +159,76 @@ export async function POST(req: NextRequest) {
         gateway_txn_id:   String(obj.id),
       })
       .eq('id', installmentId)
-      .eq('status', 'pending')
+      .in('status', ['pending', 'overdue'])
+      .select('id, amount, order_id, user_id, orders(product_id, products(title), installment_plan)')
+      .maybeSingle()
+
+    if (installmentRow?.user_id) {
+      try {
+        const [authRes, paidCountRes] = await Promise.all([
+          admin.auth.admin.getUserById(installmentRow.user_id),
+          admin
+            .from('installment_payments')
+            .select('id', { count: 'exact', head: true })
+            .eq('order_id', installmentRow.order_id)
+            .eq('status', 'paid'),
+        ])
+
+        const relatedOrder = Array.isArray(installmentRow.orders)
+          ? installmentRow.orders[0]
+          : installmentRow.orders
+        const relatedProduct = Array.isArray(relatedOrder?.products)
+          ? relatedOrder.products[0]
+          : relatedOrder?.products
+        const totalInstallments =
+          Number.parseInt(String(relatedOrder?.installment_plan || '1'), 10) || 1
+        const paidInstallments = (paidCountRes.count ?? 0) + 1 // include first down payment
+        const email = authRes.data.user?.email
+        if (email) {
+          void sendInstallmentPaidEmail({
+            to: email,
+            productTitle: relatedProduct?.title || 'المنتج',
+            installmentNumber: paidInstallments,
+            totalInstallments,
+            amount: Number(installmentRow.amount),
+          }).catch((emailError) => {
+            console.error('[paymob webhook] installment email failed:', emailError)
+          })
+        }
+      } catch (emailError) {
+        console.error('[paymob webhook] installment notification failed:', emailError)
+      }
+
+      const today = getCairoDateString()
+      const { data: blockers } = await admin
+        .from('installment_payments')
+        .select('id, due_date, status')
+        .eq('order_id', installmentRow.order_id)
+        .in('status', ['pending', 'overdue'])
+
+      const blockerRows = blockers ?? []
+      const overduePendingIds = blockerRows
+        .filter((row) => row.status === 'pending' && String(row.due_date) < today)
+        .map((row) => row.id)
+
+      if (overduePendingIds.length > 0) {
+        await admin
+          .from('installment_payments')
+          .update({ status: 'overdue' })
+          .in('id', overduePendingIds)
+          .eq('status', 'pending')
+      }
+
+      const hasOverdue = blockerRows.some(
+        (row) => row.status === 'overdue' || String(row.due_date) < today
+      )
+
+      await admin
+        .from('orders')
+        .update({ status: hasOverdue ? 'suspended' : 'completed' })
+        .eq('id', installmentRow.order_id)
+        .in('status', ['completed', 'suspended'])
+    }
 
     console.log('[paymob webhook] installment paid', installmentId)
     return NextResponse.json({ received: true })

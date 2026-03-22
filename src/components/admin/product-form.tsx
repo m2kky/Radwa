@@ -12,7 +12,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, X } from 'lucide-react'
+import { ImagePlus, Loader2, Plus, X } from 'lucide-react'
 import type { Product, ProductFile } from '@/types'
 
 type FormProduct = Partial<Pick<
@@ -29,14 +29,11 @@ interface Props {
 
 function normalizeFiles(files: ProductFile[] | null | undefined): ProductFile[] {
   if (!files || files.length === 0) return []
-
-  return files
-    .filter((f) => typeof f?.storage_path === 'string' && f.storage_path.trim().length > 0)
-    .map((f) => ({
-      name: f.name || 'file',
-      storage_path: f.storage_path,
-      size: typeof f.size === 'number' && Number.isFinite(f.size) ? Math.max(0, Math.round(f.size)) : 0,
-    }))
+  return files.map((f) => ({
+    name: f?.name || '',
+    storage_path: f?.storage_path || '',
+    size: typeof f?.size === 'number' && Number.isFinite(f.size) ? Math.max(0, Math.round(f.size)) : 0,
+  }))
 }
 
 function deriveNameFromPath(path: string, fallback = 'file'): string {
@@ -53,6 +50,7 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingThumb, setUploadingThumb] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormProduct>({
@@ -115,6 +113,32 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
       setError(err instanceof Error ? err.message : 'فشل رفع الملف')
     } finally {
       setUploading(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingThumb(true)
+    setError(null)
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      data.append('folder', `products/${form.slug?.trim() || 'general'}`)
+
+      const res = await fetch('/api/admin/media/upload', {
+        method: 'POST',
+        body: data,
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error?.message ?? 'فشل رفع الصورة')
+      set('thumbnail_url', body.data?.url || '')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل رفع الصورة')
+    } finally {
+      setUploadingThumb(false)
       event.target.value = ''
     }
   }
@@ -236,13 +260,26 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
 
       <div>
         <label className={labelClass}>رابط الصورة</label>
-        <input
-          value={form.thumbnail_url ?? ''}
-          onChange={(e) => set('thumbnail_url', e.target.value)}
-          className={inputClass}
-          placeholder="https://..."
-          dir="ltr"
-        />
+        <div className="flex flex-col md:flex-row gap-2">
+          <input
+            value={form.thumbnail_url ?? ''}
+            onChange={(e) => set('thumbnail_url', e.target.value)}
+            className={inputClass}
+            placeholder="https://... أو /api/media?path=..."
+            dir="ltr"
+          />
+          <label className="inline-flex items-center justify-center gap-2 bg-cold-black border border-border px-3 py-2 rounded-lg text-xs text-foreground cursor-pointer hover:border-cyan-glow/40 transition-colors whitespace-nowrap">
+            {uploadingThumb ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+            {uploadingThumb ? 'جاري رفع الصورة...' : 'رفع صورة'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleThumbnailUpload}
+              disabled={uploadingThumb}
+            />
+          </label>
+        </div>
       </div>
 
       <div className="border border-border rounded-xl p-4 space-y-4 bg-cold-dark/40">

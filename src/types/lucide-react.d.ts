@@ -50,6 +50,7 @@ declare module 'lucide-react' {
   export const Link: LucideIcon
   export const Undo: LucideIcon
   export const Redo: LucideIcon
+  export const ImagePlus: LucideIcon
   export const ChevronDownIcon: LucideIcon
   export const CheckIcon: LucideIcon
   export const ChevronUpIcon: LucideIcon

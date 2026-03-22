@@ -24,11 +24,34 @@ function pickOrderId(searchParams: URLSearchParams): string | null {
   return null
 }
 
+function isTruthy(value: string | null): boolean {
+  if (!value) return false
+  const normalized = value.trim().toLowerCase()
+  return normalized === 'true' || normalized === '1'
+}
+
 export async function GET(req: NextRequest) {
-  const orderId = pickOrderId(req.nextUrl.searchParams)
+  const params = req.nextUrl.searchParams
+  const orderId = pickOrderId(params)
 
   if (!orderId) {
     return NextResponse.redirect(new URL('/shop?payment=missing_order', req.nextUrl.origin))
+  }
+
+  const hasSuccessFlag = params.has('success')
+  const success = isTruthy(params.get('success'))
+  const pending = isTruthy(params.get('pending'))
+
+  if (pending) {
+    return NextResponse.redirect(
+      new URL(`/shop?payment=pending&order=${encodeURIComponent(orderId)}`, req.nextUrl.origin)
+    )
+  }
+
+  if (hasSuccessFlag && !success) {
+    return NextResponse.redirect(
+      new URL(`/shop?payment=failed&order=${encodeURIComponent(orderId)}`, req.nextUrl.origin)
+    )
   }
 
   // Installment callback uses merchant_order_id = inst_{installment_id}

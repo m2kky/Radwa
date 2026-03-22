@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { uploadToR2 } from '@/lib/r2'
+import { sendKycAdminNotificationEmail, sendKycSubmittedEmail } from '@/lib/email'
 
 const jsonSchema = z.object({
   id_front_url: z.string().min(1),
@@ -146,6 +147,19 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       throw error
+    }
+
+    const userName = (user.user_metadata?.name || fallbackName || '').toString()
+    if (user.email) {
+      void sendKycSubmittedEmail(user.email, userName).catch((emailError) => {
+        console.error('[installments/kyc] user email failed:', emailError)
+      })
+      void sendKycAdminNotificationEmail({
+        userEmail: user.email,
+        userName,
+      }).catch((emailError) => {
+        console.error('[installments/kyc] admin notification failed:', emailError)
+      })
     }
 
     return NextResponse.json({ success: true, data })

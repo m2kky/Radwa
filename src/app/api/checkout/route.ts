@@ -247,8 +247,12 @@ export async function POST(req: NextRequest) {
       )
     }
     console.error('[checkout] unexpected error:', error)
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : 'Something went wrong'
     return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } },
+      { error: { code: 'INTERNAL_ERROR', message } },
       { status: 500 }
     )
   }

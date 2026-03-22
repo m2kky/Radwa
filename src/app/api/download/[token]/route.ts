@@ -17,6 +17,15 @@ interface R2Ref {
   key: string
 }
 
+function getCairoDateString(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
+
 function isHttpUrl(value: string): boolean {
   try {
     const parsed = new URL(value)
@@ -46,7 +55,7 @@ export async function GET(
 
   const { data: tokenRow } = await admin
     .from('download_tokens')
-    .select('*, products(files)')
+    .select('*, products(files), orders(installment_plan)')
     .eq('token', token)
     .maybeSingle()
 
@@ -61,6 +70,49 @@ export async function GET(
 
   if (tokenRow.download_count >= tokenRow.max_downloads) {
     return NextResponse.json({ error: 'Download limit reached' }, { status: 410 })
+  }
+
+  const order = Array.isArray(tokenRow.orders) ? tokenRow.orders[0] : tokenRow.orders
+  if (order?.installment_plan && order.installment_plan !== 'full') {
+    const today = getCairoDateString()
+    const { data: installments } = await admin
+      .from('installment_payments')
+      .select('id, due_date, status')
+      .eq('order_id', tokenRow.order_id)
+      .in('status', ['pending', 'overdue'])
+
+    const rows = installments ?? []
+    const overduePendingIds = rows
+      .filter((row) => row.status === 'pending' && String(row.due_date) < today)
+      .map((row) => row.id)
+    const hasBlockedInstallment =
+      overduePendingIds.length > 0 || rows.some((row) => row.status === 'overdue')
+
+    if (overduePendingIds.length > 0) {
+      await admin
+        .from('installment_payments')
+        .update({ status: 'overdue' })
+        .in('id', overduePendingIds)
+        .eq('status', 'pending')
+      await admin
+        .from('orders')
+        .update({ status: 'suspended' })
+        .eq('id', tokenRow.order_id)
+        .in('status', ['completed', 'pending'])
+    } else if (rows.some((row) => row.status === 'overdue')) {
+      await admin
+        .from('orders')
+        .update({ status: 'suspended' })
+        .eq('id', tokenRow.order_id)
+        .in('status', ['completed', 'pending'])
+    }
+
+    if (hasBlockedInstallment) {
+      return NextResponse.json(
+        { error: 'الوصول للمنتج متوقف مؤقتًا لوجود قسط متأخر. يرجى السداد من الداشبورد.' },
+        { status: 423 }
+      )
+    }
   }
 
   const files = tokenRow.products?.files

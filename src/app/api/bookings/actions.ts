@@ -1,7 +1,10 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
-import { Resend } from 'resend'
+import {
+  sendBookingAdminNotificationEmail,
+  sendBookingConfirmationEmail,
+} from '@/lib/email'
 
 type SlotSegment = { start_time: string; end_time: string }
 type OverrideSlot = { start: string; end: string }
@@ -211,17 +214,24 @@ export async function submitBooking(formData: FormData) {
   }
 
   try {
-    const apiKey = process.env.RESEND_API_KEY
-    const from = process.env.RESEND_FROM
-    if (apiKey && from) {
-      const resend = new Resend(apiKey)
-      await resend.emails.send({
-        from,
-        to: clientEmail,
-        subject: `تم تأكيد حجزك${eventType?.title ? `: ${eventType.title}` : ''}`,
-        text: `تم تأكيد حجزك يوم ${bookingDate} الساعة ${startTime}.`,
-      })
-    }
+    const title = eventType?.title || 'جلسة استشارية'
+    await sendBookingConfirmationEmail({
+      to: clientEmail,
+      clientName,
+      eventTitle: title,
+      bookingDate,
+      startTime,
+      endTime,
+    })
+    await sendBookingAdminNotificationEmail({
+      clientName,
+      clientEmail,
+      clientPhone,
+      eventTitle: title,
+      bookingDate,
+      startTime,
+      endTime,
+    })
   } catch (emailError) {
     console.error('[bookings] confirmation email failed:', emailError)
   }

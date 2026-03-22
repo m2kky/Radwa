@@ -18,7 +18,7 @@ const postSchema = z.object({
   title:         z.string().min(1),
   excerpt:       z.string().optional(),
   content:       z.string().optional(),
-  thumbnail_url: z.string().url().optional().or(z.literal('')),
+  thumbnail_url: z.string().trim().min(1).optional().or(z.literal('')),
   category:      z.string().optional(),
   is_featured:   z.boolean().default(false),
   status:        z.enum(['draft', 'published']).default('draft'),

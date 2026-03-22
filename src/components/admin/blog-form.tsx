@@ -11,6 +11,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ImagePlus, Loader2 } from 'lucide-react'
 import RichTextEditor from '@/components/admin/rich-text-editor'
 
 interface FormData {
@@ -32,6 +33,7 @@ interface Props {
 export default function BlogForm({ id, defaultValues = {} }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploadingThumb, setUploadingThumb] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormData>({
@@ -63,6 +65,32 @@ export default function BlogForm({ id, defaultValues = {} }: Props) {
       setError(err instanceof Error ? err.message : 'حدث خطأ')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingThumb(true)
+    setError(null)
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      data.append('folder', `blog/${form.slug?.trim() || 'general'}`)
+
+      const res = await fetch('/api/admin/media/upload', {
+        method: 'POST',
+        body: data,
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error?.message ?? 'فشل رفع الصورة')
+      set('thumbnail_url', body.data?.url || '')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل رفع الصورة')
+    } finally {
+      setUploadingThumb(false)
+      event.target.value = ''
     }
   }
 
@@ -107,7 +135,20 @@ export default function BlogForm({ id, defaultValues = {} }: Props) {
 
       <div>
         <label className={labelClass}>رابط الصورة</label>
-        <input value={form.thumbnail_url} onChange={e => set('thumbnail_url', e.target.value)} className={inputClass} placeholder="https://..." dir="ltr" />
+        <div className="flex flex-col md:flex-row gap-2">
+          <input value={form.thumbnail_url} onChange={e => set('thumbnail_url', e.target.value)} className={inputClass} placeholder="https://... أو /api/media?path=..." dir="ltr" />
+          <label className="inline-flex items-center justify-center gap-2 bg-cold-black border border-border px-3 py-2 rounded-lg text-xs text-foreground cursor-pointer hover:border-cyan-glow/40 transition-colors whitespace-nowrap">
+            {uploadingThumb ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+            {uploadingThumb ? 'جاري رفع الصورة...' : 'رفع صورة'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleThumbnailUpload}
+              disabled={uploadingThumb}
+            />
+          </label>
+        </div>
       </div>
 
       <div>

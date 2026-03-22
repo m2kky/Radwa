@@ -24,7 +24,7 @@ const productSchema = z.object({
   type: z.enum(['course', 'digital']),
   title: z.string().min(1),
   description: z.string().optional(),
-  thumbnail_url: z.string().url().optional().nullable(),
+  thumbnail_url: z.string().trim().min(1).optional().nullable(),
   price: z.number().positive(),
   compare_at_price: z.number().positive().optional().nullable(),
   installments_enabled: z.boolean().default(false),
