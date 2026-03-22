@@ -25,7 +25,7 @@ export async function initiatePaymob(
   const integrationId = method === 'wallet' ? integrationIdWallet : integrationIdCard
   const iframeIdCard = process.env.PAYMOB_IFRAME_ID
   const iframeIdWallet = process.env.PAYMOB_IFRAME_ID_WALLET
-  const iframeId = method === 'wallet' ? (iframeIdWallet || iframeIdCard) : iframeIdCard
+  const iframeId = method === 'wallet' ? iframeIdWallet : iframeIdCard
 
   if (!apiKey || !iframeId) {
     throw new Error('Paymob environment variables not configured')
@@ -38,6 +38,10 @@ export async function initiatePaymob(
   const parsedIntegrationId = Number.parseInt(integrationId, 10)
   if (Number.isNaN(parsedIntegrationId)) {
     throw new Error('Invalid Paymob integration id')
+  }
+
+  if (method === 'wallet' && iframeIdCard && iframeId === iframeIdCard) {
+    throw new Error('Wallet must use a dedicated PAYMOB_IFRAME_ID_WALLET')
   }
 
   const normalizedPhone = data.customer.phone.replace(/\D/g, '')

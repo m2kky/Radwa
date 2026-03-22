@@ -17,17 +17,39 @@ function sanitizeFilename(name: string): string {
     .replace(/^-|-$/g, '') || 'document.bin'
 }
 
+function canUseR2(): boolean {
+  return Boolean(
+    process.env.R2_ACCOUNT_ID &&
+    process.env.R2_ACCESS_KEY_ID &&
+    process.env.R2_SECRET_ACCESS_KEY
+  )
+}
+
 async function uploadKycDocument(
   file: File,
   userId: string,
   label: 'front' | 'back' | 'photo',
-  bucket: string
+  admin: ReturnType<typeof createAdminClient>,
+  options: { r2Bucket: string; supabaseBucket: string }
 ): Promise<string> {
   const safeName = sanitizeFilename(file.name)
   const storagePath = `kyc/${userId}/${Date.now()}-${label}-${safeName}`
   const bytes = Buffer.from(await file.arrayBuffer())
-  await uploadToR2(storagePath, bytes, file.type || undefined, bucket)
-  return `r2://${bucket}/${storagePath}`
+
+  if (canUseR2()) {
+    await uploadToR2(storagePath, bytes, file.type || undefined, options.r2Bucket)
+    return `r2://${options.r2Bucket}/${storagePath}`
+  }
+
+  const { error } = await admin.storage
+    .from(options.supabaseBucket)
+    .upload(storagePath, bytes, {
+      contentType: file.type || 'application/octet-stream',
+      upsert: true,
+    })
+
+  if (error) throw error
+  return `sb://${options.supabaseBucket}/${storagePath}`
 }
 
 export async function POST(req: NextRequest) {
@@ -45,7 +67,9 @@ export async function POST(req: NextRequest) {
     }
 
     const contentType = req.headers.get('content-type') || ''
-    const bucketName = process.env.R2_BUCKET_KYC || 'kyc-documents'
+    const admin = createAdminClient()
+    const r2BucketName = process.env.R2_BUCKET_KYC || 'kyc-documents'
+    const supabaseBucketName = process.env.SUPABASE_BUCKET_KYC || 'kyc-documents'
 
     let id_front_url = ''
     let id_back_url = ''
@@ -72,9 +96,18 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      id_front_url = await uploadKycDocument(idFront, user.id, 'front', bucketName)
-      id_back_url = await uploadKycDocument(idBack, user.id, 'back', bucketName)
-      photo_url = await uploadKycDocument(photo, user.id, 'photo', bucketName)
+      id_front_url = await uploadKycDocument(idFront, user.id, 'front', admin, {
+        r2Bucket: r2BucketName,
+        supabaseBucket: supabaseBucketName,
+      })
+      id_back_url = await uploadKycDocument(idBack, user.id, 'back', admin, {
+        r2Bucket: r2BucketName,
+        supabaseBucket: supabaseBucketName,
+      })
+      photo_url = await uploadKycDocument(photo, user.id, 'photo', admin, {
+        r2Bucket: r2BucketName,
+        supabaseBucket: supabaseBucketName,
+      })
     } else {
       const body = await req.json()
       const input = jsonSchema.parse(body)
@@ -83,7 +116,6 @@ export async function POST(req: NextRequest) {
       photo_url = input.photo_url
     }
 
-    const admin = createAdminClient()
     const fallbackName = (
       user.user_metadata?.name ||
       user.email?.split('@')[0] ||

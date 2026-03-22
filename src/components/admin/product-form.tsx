@@ -39,6 +39,16 @@ function normalizeFiles(files: ProductFile[] | null | undefined): ProductFile[] 
     }))
 }
 
+function deriveNameFromPath(path: string, fallback = 'file'): string {
+  const trimmed = path.trim()
+  if (!trimmed) return fallback
+
+  const clean = trimmed.split('?')[0].split('#')[0]
+  const parts = clean.split('/')
+  const candidate = parts[parts.length - 1]?.trim()
+  return candidate && candidate.length > 0 ? candidate : fallback
+}
+
 export default function ProductForm({ id, defaultValues = {} }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -116,9 +126,9 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
 
     try {
       const filesPayload = productFiles
-        .filter((f) => f.name.trim().length > 0 && f.storage_path.trim().length > 0)
+        .filter((f) => f.storage_path.trim().length > 0)
         .map((f) => ({
-          name: f.name.trim(),
+          name: f.name.trim() || deriveNameFromPath(f.storage_path, 'file'),
           storage_path: f.storage_path.trim(),
           size: Number.isFinite(f.size) ? Math.max(0, Math.round(f.size)) : 0,
         }))
@@ -240,7 +250,7 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
           <div>
             <p className="text-sm font-medium text-foreground">ملفات المنتج</p>
             <p className="text-xs text-muted-foreground mt-1">
-              تقدر ترفع الملف مباشرة أو تضيف مسار/رابط من Cloudflare.
+              تقدر تضيف رابط مباشر (Cloudflare/R2) فقط بدون رفع، أو ترفع الملف مباشرة.
             </p>
           </div>
 
