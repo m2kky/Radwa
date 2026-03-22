@@ -71,6 +71,9 @@ export default async function DashboardPage() {
     installmentsQuery,
   ])
 
+  const installmentStatus = profile?.installment_status ?? 'none'
+  const rejectionReason = profile?.rejection_reason
+
   return (
     <main className="container max-w-3xl mx-auto px-4 py-12 space-y-10">
       <div className="flex items-center justify-between">
@@ -80,13 +83,13 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      {profile && profile.installment_status !== 'approved' && (
+      {installmentStatus !== 'approved' && (
         <section className="rounded-lg border border-border bg-card p-4 space-y-3">
           <p className="text-sm text-muted-foreground">
-            {profile.installment_status === 'pending'
+            {installmentStatus === 'pending'
               ? 'طلب تفعيل التقسيط قيد المراجعة حاليًا.'
-              : profile.installment_status === 'rejected'
-                ? `تم رفض طلب التفعيل${profile.rejection_reason ? `: ${profile.rejection_reason}` : ''}.`
+              : installmentStatus === 'rejected'
+                ? `تم رفض طلب التفعيل${rejectionReason ? `: ${rejectionReason}` : ''}.`
                 : 'التقسيط يتطلب رفع بيانات التحقق أولًا.'}
           </p>
           <Link href="/dashboard/kyc">

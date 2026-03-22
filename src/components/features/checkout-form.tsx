@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -143,6 +144,20 @@ export function CheckoutForm({ product }: { product: Product }) {
               {perInstallment.toLocaleString('ar-EG')} ج × {installmentCount} = {basePrice.toLocaleString('ar-EG')} ج
             </p>
           )}
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            التقسيط يتطلب تسجيل الدخول ورفع طلب تفعيل الهوية.
+            {' '}
+            <Link href="/dashboard/kyc" className="text-primary hover:underline">
+              قدم طلب التقسيط من هنا
+            </Link>
+            {' '}
+            أو
+            {' '}
+            <Link href="/login" className="text-primary hover:underline">
+              سجل دخولك
+            </Link>
+            .
+          </p>
         </div>
       )}
 

@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -95,9 +96,20 @@ function VerifyOTPContent() {
       toast.success('تم تفعيل حسابك بنجاح!')
       const normalizedEmail = email.trim().toLowerCase()
       sessionStorage.removeItem(`signup_password:${normalizedEmail}`)
-      
-      // Auto-login or redirect to login
-      router.push('/login?verified=true')
+
+      const supabase = createClient()
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      })
+
+      if (signInError) {
+        router.push('/login?verified=true')
+        return
+      }
+
+      router.push('/dashboard')
+      router.refresh()
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'فشل التحقق من الكود'))
     } finally {
