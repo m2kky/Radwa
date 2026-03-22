@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Custom color tokens — mirrors v1 */
+  --color-cold-black: #050505;
+  --color-cold-dark: #121212;
+  --color-cold-medium: #27272a;
+  --color-cyan-glow: #FACC15;
+  --color-ice-white: #FAFAFA;
+
+  --background: #050505;
+  --foreground: #FAFAFA;
+  --card: #121212;
+  --card-foreground: #FAFAFA;
+  --popover: #121212;
+  --popover-foreground: #FAFAFA;
+  --primary: #FACC15;
+  --primary-foreground: #050505;
+  --secondary: #27272a;
+  --secondary-foreground: #FAFAFA;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #FACC15;
+  --accent-foreground: #050505;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #27272a;
+  --input: #121212;
+  --ring: #FACC15;
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --font-sans: var(--font-tajawal);
+  --font-serif: var(--font-tajawal);
+
+  /* v1 color aliases */
+  --color-cold-black: var(--color-cold-black);
+  --color-cold-dark: var(--color-cold-dark);
+  --color-cold-medium: var(--color-cold-medium);
+  --color-cyan-glow: var(--color-cyan-glow);
+  --color-ice-white: var(--color-ice-white);
+  --color-brand-white: var(--color-ice-white);
+  --color-brand-light: var(--color-cyan-glow);
+  --color-brand-dark: var(--color-cold-black);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground antialiased; }
+
+  .glass-teal {
+    @apply bg-zinc-900/40 backdrop-blur-md border border-yellow-500/10 shadow-lg;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes blob-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(5vw, 10vh) scale(1.1); }
+  50% { transform: translate(-3vw, 5vh) scale(0.95); }
+  75% { transform: translate(8vw, -5vh) scale(1.05); }
+}
+@keyframes blob-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-8vw, 5vh) scale(1.05); }
+  50% { transform: translate(5vw, -10vh) scale(1.15); }
+  75% { transform: translate(-3vw, 8vh) scale(0.9); }
+}
+@keyframes blob-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(10vw, -8vh) scale(0.9); }
+  50% { transform: translate(-5vw, 12vh) scale(1.1); }
+  75% { transform: translate(3vw, -3vh) scale(1.05); }
+}
+.animate-blob-1 { animation: blob-1 20s ease-in-out infinite; }
+.animate-blob-2 { animation: blob-2 25s ease-in-out infinite; }
+.animate-blob-3 { animation: blob-3 22s ease-in-out infinite; }

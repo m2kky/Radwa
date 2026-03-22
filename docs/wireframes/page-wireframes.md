@@ -1,0 +1,106 @@
+# Wireframes — Radwa v2
+
+## Page Map
+
+```
+/                          → Homepage (public)
+/shop                      → Product listing (public)
+/shop/[slug]               → Product detail + checkout form
+/blog                      → Blog listing (public)
+/blog/[slug]               → Blog post (public)
+/success                   → Post-purchase success + download
+/download/[token]          → File download (redirect to R2)
+/login                     → Login page
+/signup                    → Signup page (email + name)
+/verify-otp                → OTP verification
+/dashboard                 → Student dashboard
+/admin                     → Admin dashboard
+/admin/products            → Admin product management
+/admin/orders              → Admin order management
+/admin/blog                → Admin blog management
+/admin/coupons             → Admin coupon management
+```
+
+## Screen Flows
+
+### Checkout Flow
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Product      │ ──→ │ Checkout     │ ──→ │ Payment      │ ──→ │ Success      │
+│ Detail       │     │ Form         │     │ Gateway      │     │ + Download   │
+│              │     │ • Name       │     │ (Paymob/     │     │              │
+│ [اشتري الآن]│     │ • Email      │     │   Paymob)    │     │ [تحميل]      │
+│              │     │ • Phone      │     │              │     │              │
+│              │     │ • Method     │     │              │     │              │
+│              │     │ • Coupon     │     │              │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Auth Flow
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Login        │     │ Signup       │ ──→ │ Verify OTP   │ ──→ │ Dashboard    │
+│              │     │              │     │              │     │              │
+│ [Email]      │     │ [Name]       │     │ [6-digit]    │     │ مشترياتي    │
+│ [Password]   │     │ [Email]      │     │ [Password]   │     │ أقساطي      │
+│ [Google]     │     │ [إرسال كود] │     │ [تأكيد]     │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Admin Flow
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Admin Home   │ ──→ │ Products     │     │ Orders       │
+│              │     │ Management   │     │ Management   │
+│ Stats:       │     │              │     │              │
+│ • Revenue    │     │ [+ منتج]    │     │ [فلترة]      │
+│ • Orders     │     │ [تعديل]     │     │ [تفاصيل]    │
+│ • Products   │     │ [حذف]       │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+## Component Hierarchy
+
+### ProductCard
+```
+┌─────────────────────────┐
+│  ┌───────────────────┐  │
+│  │   thumbnail_url   │  │
+│  └───────────────────┘  │
+│  title                  │
+│  description (truncated)│
+│  ┌────┐  ┌──────────┐  │
+│  │EGP │  │compare_at│  │
+│  │500 │  │  ̶7̶0̶0̶    │  │
+│  └────┘  └──────────┘  │
+│  [اشتري الآن]          │
+└─────────────────────────┘
+```
+
+### CheckoutForm
+```
+┌─────────────────────────┐
+│  Product Summary        │
+│  ─────────────────────  │
+│  [الاسم]               │
+│  [الإيميل]             │
+│  [التليفون]            │
+│  ─────────────────────  │
+│  ○ بطاقة ائتمان       │
+│  ○ محفظة إلكترونية    │
+│  ○ فوري               │
+│  ○ أمان               │
+│  ─────────────────────  │
+│  ○ دفع كامل           │
+│  ○ 2 أقساط            │
+│  ○ 4 أقساط            │
+│  ─────────────────────  │
+│  [كود خصم] [تطبيق]     │
+│  ─────────────────────  │
+│  المبلغ: 500 EGP       │
+│  الخصم: -100 EGP       │
+│  الإجمالي: 400 EGP     │
+│  ─────────────────────  │
+│  [ادفع الآن]           │
+└─────────────────────────┘
+```
