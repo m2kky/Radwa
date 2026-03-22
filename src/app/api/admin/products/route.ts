@@ -13,19 +13,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
 
+const productFileSchema = z.object({
+  name: z.string().min(1),
+  storage_path: z.string().min(1),
+  size: z.number().int().nonnegative(),
+})
+
 const productSchema = z.object({
   slug: z.string().min(1),
   type: z.enum(['course', 'digital']),
   title: z.string().min(1),
   description: z.string().optional(),
-  thumbnail_url: z.string().url().optional(),
+  thumbnail_url: z.string().url().optional().nullable(),
   price: z.number().positive(),
-  compare_at_price: z.number().positive().optional(),
+  compare_at_price: z.number().positive().optional().nullable(),
   installments_enabled: z.boolean().default(false),
+  files: z.array(productFileSchema).optional().nullable(),
   is_featured: z.boolean().default(false),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  meta_title: z.string().optional(),
-  meta_description: z.string().optional(),
+  meta_title: z.string().optional().nullable(),
+  meta_description: z.string().optional().nullable(),
 })
 
 export async function GET(_req: NextRequest) {

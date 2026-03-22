@@ -12,6 +12,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getSignedDownloadUrl } from '@/lib/r2'
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -43,13 +52,20 @@ export async function GET(
     return NextResponse.json({ error: 'No files available' }, { status: 404 })
   }
 
-  // 5-minute signed URL — actual file never exposed directly
-  let signedUrl: string
-  try {
-    signedUrl = await getSignedDownloadUrl(files[0].storage_path, 300)
-  } catch (error) {
-    console.error('[download] signed URL generation failed', error)
-    return NextResponse.json({ error: 'File temporarily unavailable' }, { status: 503 })
+  const storagePath = files[0].storage_path
+  let downloadUrl: string
+
+  if (isHttpUrl(storagePath)) {
+    // Allow direct external URLs (for manually hosted product files).
+    downloadUrl = storagePath
+  } else {
+    // 5-minute signed URL — actual file never exposed directly
+    try {
+      downloadUrl = await getSignedDownloadUrl(storagePath, 300)
+    } catch (error) {
+      console.error('[download] signed URL generation failed', error)
+      return NextResponse.json({ error: 'File temporarily unavailable' }, { status: 503 })
+    }
   }
 
   // Optimistic lock — prevents race condition
@@ -65,5 +81,5 @@ export async function GET(
     return NextResponse.json({ error: 'Download limit reached' }, { status: 410 })
   }
 
-  return NextResponse.redirect(signedUrl)
+  return NextResponse.redirect(downloadUrl)
 }

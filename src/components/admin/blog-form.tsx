@@ -52,7 +52,7 @@ export default function BlogForm({ id, defaultValues = {} }: Props) {
       const res    = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, thumbnail_url: form.thumbnail_url || null }),
+        body: JSON.stringify({ ...form, thumbnail_url: form.thumbnail_url || '' }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error?.message ?? 'حدث خطأ')

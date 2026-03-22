@@ -12,12 +12,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Product } from '@/types'
+import { Loader2, Plus, X } from 'lucide-react'
+import type { Product, ProductFile } from '@/types'
 
 type FormProduct = Partial<Pick<
   Product,
   'slug' | 'type' | 'title' | 'description' | 'thumbnail_url' |
-  'price' | 'compare_at_price' | 'installments_enabled' | 'is_featured' |
+  'price' | 'compare_at_price' | 'installments_enabled' | 'files' | 'is_featured' |
   'status' | 'meta_title' | 'meta_description'
 >>
 
@@ -26,9 +27,22 @@ interface Props {
   defaultValues?: FormProduct
 }
 
+function normalizeFiles(files: ProductFile[] | null | undefined): ProductFile[] {
+  if (!files || files.length === 0) return []
+
+  return files
+    .filter((f) => typeof f?.storage_path === 'string' && f.storage_path.trim().length > 0)
+    .map((f) => ({
+      name: f.name || 'file',
+      storage_path: f.storage_path,
+      size: typeof f.size === 'number' && Number.isFinite(f.size) ? Math.max(0, Math.round(f.size)) : 0,
+    }))
+}
+
 export default function ProductForm({ id, defaultValues = {} }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormProduct>({
@@ -45,10 +59,55 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
     meta_title: '',
     meta_description: '',
     ...defaultValues,
+    files: normalizeFiles(defaultValues.files),
   })
 
   const set = (key: keyof FormProduct, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }))
+
+  const productFiles = normalizeFiles(form.files)
+
+  const addManualFile = () => {
+    set('files', [...productFiles, { name: '', storage_path: '', size: 0 }])
+  }
+
+  const updateFile = (index: number, patch: Partial<ProductFile>) => {
+    const next = [...productFiles]
+    next[index] = { ...next[index], ...patch }
+    set('files', next)
+  }
+
+  const removeFile = (index: number) => {
+    const next = productFiles.filter((_, i) => i !== index)
+    set('files', next)
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError(null)
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      data.append('slug', form.slug?.trim() || form.title?.trim() || 'product')
+
+      const res = await fetch('/api/admin/products/upload', {
+        method: 'POST',
+        body: data,
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error?.message ?? 'فشل رفع الملف')
+
+      set('files', [...productFiles, body.data])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل رفع الملف')
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +115,14 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
     setError(null)
 
     try {
+      const filesPayload = productFiles
+        .filter((f) => f.name.trim().length > 0 && f.storage_path.trim().length > 0)
+        .map((f) => ({
+          name: f.name.trim(),
+          storage_path: f.storage_path.trim(),
+          size: Number.isFinite(f.size) ? Math.max(0, Math.round(f.size)) : 0,
+        }))
+
       const url = id ? `/api/admin/products/${id}` : '/api/admin/products'
       const method = id ? 'PATCH' : 'POST'
 
@@ -67,6 +134,7 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
           price: Number(form.price),
           compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
           thumbnail_url: form.thumbnail_url || null,
+          files: filesPayload.length > 0 ? filesPayload : null,
           meta_title: form.meta_title || null,
           meta_description: form.meta_description || null,
         }),
@@ -165,6 +233,93 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
           placeholder="https://..."
           dir="ltr"
         />
+      </div>
+
+      <div className="border border-border rounded-xl p-4 space-y-4 bg-cold-dark/40">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">ملفات المنتج</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              تقدر ترفع الملف مباشرة أو تضيف مسار/رابط من Cloudflare.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-2 bg-cold-black border border-border px-3 py-2 rounded-lg text-xs text-foreground cursor-pointer hover:border-cyan-glow/40 transition-colors">
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              {uploading ? 'جاري الرفع...' : 'رفع ملف'}
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={addManualFile}
+              className="inline-flex items-center gap-1.5 bg-cyan-glow text-cold-black px-3 py-2 rounded-lg text-xs font-semibold hover:bg-cyan-glow/90 transition-colors"
+            >
+              <Plus size={14} />
+              إضافة رابط
+            </button>
+          </div>
+        </div>
+
+        {productFiles.length === 0 ? (
+          <p className="text-xs text-muted-foreground">لا يوجد ملفات مضافة.</p>
+        ) : (
+          <div className="space-y-3">
+            {productFiles.map((file, idx) => (
+              <div key={`${file.storage_path}-${idx}`} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                <div className="md:col-span-3">
+                  <label className={labelClass}>اسم الملف</label>
+                  <input
+                    value={file.name}
+                    onChange={(e) => updateFile(idx, { name: e.target.value })}
+                    className={inputClass}
+                    placeholder="course.pdf"
+                  />
+                </div>
+
+                <div className="md:col-span-6">
+                  <label className={labelClass}>Storage Path / URL</label>
+                  <input
+                    value={file.storage_path}
+                    onChange={(e) => updateFile(idx, { storage_path: e.target.value })}
+                    className={inputClass}
+                    placeholder="products/my-product/file.pdf or https://..."
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className={labelClass}>الحجم (bytes)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={file.size}
+                    onChange={(e) => updateFile(idx, { size: Number(e.target.value || 0) })}
+                    className={inputClass}
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="md:col-span-1">
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="w-full h-10 border border-border rounded-lg text-red-400 hover:bg-red-500/10 transition-colors inline-flex items-center justify-center"
+                    title="حذف الملف"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
