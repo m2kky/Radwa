@@ -31,9 +31,28 @@ function isTruthy(value: string | null): boolean {
   return normalized === 'true' || normalized === '1'
 }
 
+function getFailureParams(searchParams: URLSearchParams): URLSearchParams {
+  const out = new URLSearchParams()
+  const code =
+    searchParams.get('txn_response_code') ||
+    searchParams.get('response_code') ||
+    searchParams.get('error')
+  const message =
+    searchParams.get('message') ||
+    searchParams.get('error_message') ||
+    searchParams.get('data.message')
+  const transactionId = searchParams.get('id') || searchParams.get('txn_id')
+
+  if (code) out.set('code', code)
+  if (message) out.set('reason', message)
+  if (transactionId) out.set('txn', transactionId)
+  return out
+}
+
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams
   const orderId = pickOrderId(params)
+  const failureParams = getFailureParams(params)
 
   if (!orderId) {
     return NextResponse.redirect(new URL('/shop?payment=missing_order', req.nextUrl.origin))
@@ -73,8 +92,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (hasSuccessFlag && !success) {
+      const query = new URLSearchParams({
+        booking_failed: '1',
+        booking: bookingId,
+      })
+      for (const [key, value] of failureParams.entries()) {
+        query.set(key, value)
+      }
       return NextResponse.redirect(
-        new URL(`${base}?booking_failed=1&booking=${encodeURIComponent(bookingId)}`, req.nextUrl.origin)
+        new URL(`${base}?${query.toString()}`, req.nextUrl.origin)
       )
     }
 
@@ -90,8 +116,15 @@ export async function GET(req: NextRequest) {
   }
 
   if (hasSuccessFlag && !success) {
+    const query = new URLSearchParams({
+      payment: 'failed',
+      order: orderId,
+    })
+    for (const [key, value] of failureParams.entries()) {
+      query.set(key, value)
+    }
     return NextResponse.redirect(
-      new URL(`/shop?payment=failed&order=${encodeURIComponent(orderId)}`, req.nextUrl.origin)
+      new URL(`/shop?${query.toString()}`, req.nextUrl.origin)
     )
   }
 

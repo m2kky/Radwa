@@ -20,6 +20,21 @@ interface PaymobSourceData {
   type?: string
 }
 
+interface PaymobGatewayError {
+  cause?: string
+  explanation?: string
+}
+
+interface PaymobGatewayData {
+  message?: string
+  status_code?: number
+  txn_response_code?: string
+  gateway_integration_pk?: string | number
+  json?: {
+    error?: PaymobGatewayError
+  }
+}
+
 interface PaymobOrder {
   id: string | number
   merchant_order_id: string
@@ -29,6 +44,7 @@ interface PaymobTransaction {
   amount_cents: number
   created_at: string
   currency: string
+  data?: PaymobGatewayData
   error_occured: boolean
   has_parent_transaction: boolean
   id: string | number
@@ -152,6 +168,27 @@ export async function POST(req: NextRequest) {
 
   // Only process successful transactions
   if (!obj.success || obj.pending) {
+    const diagnostic = {
+      merchantOrderId: obj.order.merchant_order_id,
+      paymobOrderId: String(obj.order.id),
+      transactionId: String(obj.id),
+      success: obj.success,
+      pending: obj.pending,
+      errorOccured: obj.error_occured,
+      integrationId: String(obj.integration_id),
+      sourceType: obj.source_data?.type ?? null,
+      sourceSubType: obj.source_data?.sub_type ?? null,
+      statusCode: obj.data?.status_code ?? null,
+      txnResponseCode: obj.data?.txn_response_code ?? null,
+      message: obj.data?.message ?? obj.data?.json?.error?.explanation ?? null,
+      cause: obj.data?.json?.error?.cause ?? null,
+    }
+
+    if (!obj.success) {
+      console.error('[paymob webhook] payment failed', diagnostic)
+    } else {
+      console.log('[paymob webhook] payment pending', diagnostic)
+    }
     return NextResponse.json({ received: true })
   }
 
