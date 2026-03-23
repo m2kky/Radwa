@@ -93,7 +93,7 @@ export default async function SuccessPage({ searchParams }: Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            <a href={`/download/${tokenRow.token}`}>
+            <a href={`/download/${tokenRow.token}?from=success`}>
               <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                 تحميل الآن
               </Button>

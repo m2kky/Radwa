@@ -25,19 +25,19 @@ export default function Timeline({ content }: { content?: HomeTimelineContent })
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
 
   // RTL: positive x moves content right, revealing cards from right→left
-  const x = useTransform(smoothProgress, [0, 0.85], ['0%', '85%'])
+  const x = useTransform(smoothProgress, [0, 0.85], ['0%', '82%'])
 
   return (
     <section ref={targetRef} className="relative h-[350vh]">
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
-        <motion.div style={{ x }} className="flex gap-5 md:gap-10 px-5 md:px-20 items-center">
+        <motion.div style={{ x }} className="flex gap-4 md:gap-10 px-4 md:px-20 items-center">
 
           {/* Intro card — first in DOM = rightmost in flex-row-reverse = visible on load */}
-          <div className="min-w-[280px] md:min-w-[400px] h-[380px] md:h-[450px] flex flex-col justify-center text-ice-white pr-12 shrink-0">
+          <div className="min-w-[240px] sm:min-w-[280px] md:min-w-[400px] h-[320px] sm:h-[360px] md:h-[450px] flex flex-col justify-center text-ice-white pr-4 sm:pr-8 md:pr-12 shrink-0">
             <h2 className="text-3xl md:text-6xl font-serif font-bold mb-4 md:mb-6 leading-tight">
               {timelineContent.intro_title}
             </h2>
-            <p className="text-base md:text-xl max-w-md opacity-80 border-r-2 border-cyan-glow/30 pr-6 py-2">
+            <p className="text-sm sm:text-base md:text-xl max-w-md opacity-80 border-r-2 border-cyan-glow/30 pr-4 sm:pr-6 py-2">
               {timelineContent.intro_description}
             </p>
             <div className="mt-6 text-xs opacity-50 uppercase tracking-widest flex items-center gap-2">
@@ -50,7 +50,7 @@ export default function Timeline({ content }: { content?: HomeTimelineContent })
           {/* Cards — after intro card in DOM = scroll left to reveal */}
           {timelineContent.items.map((item, index) => (
             <div key={item.id}
-              className="relative flex-shrink-0 w-full max-w-md min-w-[340px] md:min-w-[380px] h-[340px] md:h-[480px] p-6 md:p-10 rounded-2xl md:rounded-3xl flex flex-col justify-between bg-cold-dark/50 backdrop-blur-md border border-white/10 hover:border-cyan-glow/30 hover:scale-[1.02] transition-all duration-300 shadow-xl"
+              className="relative flex-shrink-0 w-[82vw] max-w-[300px] min-w-[250px] sm:w-[72vw] sm:max-w-[340px] sm:min-w-[280px] md:w-full md:max-w-md md:min-w-[380px] h-[320px] sm:h-[340px] md:h-[480px] p-5 sm:p-6 md:p-10 rounded-2xl md:rounded-3xl flex flex-col justify-between bg-cold-dark/50 backdrop-blur-md border border-white/10 hover:border-cyan-glow/30 hover:scale-[1.02] transition-all duration-300 shadow-xl"
             >
               <div>
                 <span className={`text-xs md:text-sm font-bold uppercase tracking-wider opacity-70 ${item.accent}`}>

@@ -10,7 +10,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Brain, Heart, Zap, ShieldCheck, type LucideIcon } from 'lucide-react'
 
 const values = [
@@ -22,16 +22,16 @@ const values = [
 
 function PhilosophyCard({ item, index }: { item: { icon: LucideIcon; title: string; desc: string }; index: number }) {
   return (
-    <div className="group relative h-[450px] w-[350px] bg-white/5 border border-white/10 rounded-[2rem] p-8 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-glow/30 transition-colors duration-500 shrink-0">
+    <div className="group relative h-[360px] sm:h-[400px] md:h-[450px] w-[82vw] max-w-[300px] min-w-[250px] sm:w-[72vw] sm:max-w-[340px] sm:min-w-[280px] md:w-[350px] md:max-w-none md:min-w-0 bg-white/5 border border-white/10 rounded-[1.5rem] md:rounded-[2rem] p-5 sm:p-6 md:p-8 flex flex-col justify-between overflow-hidden backdrop-blur-xl hover:border-cyan-glow/30 transition-colors duration-500 shrink-0">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-cyan-glow/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative z-10">
-        <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-glow mb-8 group-hover:scale-110 group-hover:bg-cyan-glow/20 transition-all duration-500">
-          <item.icon className="w-8 h-8" />
+        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/5 rounded-2xl flex items-center justify-center text-cyan-glow mb-5 md:mb-8 group-hover:scale-110 group-hover:bg-cyan-glow/20 transition-all duration-500">
+          <item.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
         </div>
-        <h3 className="text-3xl font-serif text-ice-white font-bold mb-4">{item.title}</h3>
-        <p className="text-ice-white/50 text-base leading-relaxed group-hover:text-ice-white/80 transition-colors duration-300">{item.desc}</p>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-serif text-ice-white font-bold mb-3 md:mb-4">{item.title}</h3>
+        <p className="text-ice-white/50 text-sm sm:text-base leading-relaxed group-hover:text-ice-white/80 transition-colors duration-300">{item.desc}</p>
       </div>
-      <span className="text-8xl font-bold text-white/5 absolute -bottom-4 -right-4 font-serif group-hover:text-cyan-glow/10 transition-colors duration-500">
+      <span className="text-6xl md:text-8xl font-bold text-white/5 absolute -bottom-3 -right-3 md:-bottom-4 md:-right-4 font-serif group-hover:text-cyan-glow/10 transition-colors duration-500">
         0{index + 1}
       </span>
     </div>
@@ -41,7 +41,9 @@ function PhilosophyCard({ item, index }: { item: { icon: LucideIcon; title: stri
 export function AboutPhilosophy() {
   const targetRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: targetRef })
-  const x = useTransform(scrollYProgress, [0, 1], ['70%', '-100%'])
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
+  // Keep the same scroll direction feel as home timeline cards.
+  const x = useTransform(smoothProgress, [0, 0.85], ['0%', '80%'])
   const scale = useTransform(scrollYProgress, [0, 1], [0.2, 1.5])
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1, 2])
   const color = useTransform(scrollYProgress, [0, 0.5, 1.5], ['rgba(255,255,255,0.1)', '#FACC15', 'rgba(255,255,255,0.1)'])
@@ -56,13 +58,13 @@ export function AboutPhilosophy() {
           الفلسفة
         </motion.div>
 
-        <motion.div style={{ x }} className="flex gap-12 px-24">
-          <div className="min-w-[400px] flex flex-col justify-center shrink-0">
+        <motion.div style={{ x }} className="flex gap-4 md:gap-12 px-4 md:px-24 items-center">
+          <div className="min-w-[240px] sm:min-w-[300px] md:min-w-[400px] flex flex-col justify-center shrink-0">
             <span className="text-cyan-glow uppercase tracking-[0.3em] text-sm font-bold mb-4">القيم الأساسية</span>
-            <h2 className="text-6xl md:text-7xl font-serif text-ice-white font-bold leading-none">
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif text-ice-white font-bold leading-none">
               شفرة <br /> النمو
             </h2>
-            <p className="mt-8 text-ice-white/60 text-lg max-w-sm">
+            <p className="mt-4 md:mt-8 text-ice-white/60 text-sm sm:text-base md:text-lg max-w-sm">
               أرتكز في عملي على أربع قواعد ذهبية تضمن بناء استراتيجيات قوية، قابلة للتوسع، وتضع الإنسان في جوهر اهتماماتها.
             </p>
           </div>

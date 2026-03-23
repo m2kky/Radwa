@@ -73,6 +73,8 @@
 @layer base {
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground antialiased; }
+  html { scroll-padding-top: 110px; }
+  [id] { scroll-margin-top: 110px; }
 
   .glass-teal {
     @apply bg-zinc-900/40 backdrop-blur-md border border-yellow-500/10 shadow-lg;

@@ -6,7 +6,7 @@
  */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
@@ -18,6 +18,8 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<{ email?: string } | null>(null)
+  const [menuTop, setMenuTop] = useState(92)
+  const headerRef = useRef<HTMLElement | null>(null)
   const pathname = usePathname()
   const router = useRouter()
   const links = [
@@ -47,6 +49,38 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
   }, [pathname])
 
   useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
+  useEffect(() => {
+    const measure = () => {
+      const height = headerRef.current?.getBoundingClientRect().height
+      if (!height) return
+      setMenuTop(Math.ceil(height) + 8)
+    }
+
+    measure()
+
+    const observer =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => measure())
+        : null
+
+    if (observer && headerRef.current) {
+      observer.observe(headerRef.current)
+    }
+
+    window.addEventListener('resize', measure)
+    return () => {
+      window.removeEventListener('resize', measure)
+      observer?.disconnect()
+    }
+  }, [scrolled])
+
+  useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => setUser(s?.user ?? null))
@@ -62,16 +96,16 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
   }
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-cold-black/80 backdrop-blur-xl py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+    <header ref={headerRef} className={`sticky top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-cold-black/90 backdrop-blur-2xl py-3 border-b border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.35)]' : 'bg-cold-black/70 backdrop-blur-xl py-4 border-b border-white/5'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
 
         {/* Brand */}
-        <Link href="/" className="relative flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-2 rounded-full overflow-hidden">
+        <Link href="/" className="relative flex items-center gap-2 bg-white/5 border border-white/10 px-3 sm:px-5 py-2 rounded-full overflow-hidden">
           <span className="absolute right-3 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
-          <div className="h-6 overflow-hidden pr-5 w-[180px]">
+          <div className="h-6 overflow-hidden pr-5 w-[140px] sm:w-[180px]">
             <div className="animate-text-slide flex flex-col">
               {tickerTexts.map((t, i) => (
-                <span key={i} className="h-6 flex items-center text-ice-white font-serif font-bold text-base whitespace-nowrap leading-none">{t}</span>
+                <span key={i} className="h-6 flex items-center text-ice-white font-serif font-bold text-sm sm:text-base whitespace-nowrap leading-none">{t}</span>
               ))}
             </div>
           </div>
@@ -97,7 +131,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
         {/* Mobile Toggle */}
         <button
           onClick={() => setOpen((prev) => !prev)}
-          className="md:hidden text-ice-white p-2 rounded-lg border border-white/10 bg-cold-black/20 backdrop-blur"
+          className="md:hidden text-ice-white p-2.5 rounded-xl border border-white/15 bg-cold-black/40 backdrop-blur"
           aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
         >
           {open ? <X size={22} /> : <Menu size={22} />}
@@ -111,7 +145,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
               key="mobile-menu-backdrop"
               type="button"
               aria-label="إغلاق القائمة"
-              className="fixed inset-0 z-40 md:hidden bg-cold-black/70 backdrop-blur-md"
+              className="fixed inset-0 z-40 md:hidden bg-cold-black/65 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -121,16 +155,18 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
 
             <motion.div
               key="mobile-menu-panel"
-              className="fixed top-[88px] left-4 right-4 z-50 md:hidden rounded-2xl border border-cyan-glow/20 bg-cold-black/90 backdrop-blur-2xl shadow-2xl px-6 py-6"
-              initial={{ opacity: 0, y: -18, scale: 0.97 }}
+              className="fixed left-1/2 z-50 md:hidden w-[min(92vw,420px)] -translate-x-1/2 rounded-3xl border border-cyan-glow/20 bg-cold-black/95 backdrop-blur-2xl shadow-2xl p-4"
+              style={{ top: menuTop, maxHeight: `calc(100dvh - ${menuTop + 12}px)`, overflowY: 'auto' }}
+              initial={{ opacity: 0, y: -14, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.98 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
-              <div className="flex flex-col gap-5 items-center">
+              <div className="flex flex-col gap-2">
                 {links.map((l, index) => (
                   <motion.div
                     key={l.href}
+                    className="w-full"
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
@@ -139,10 +175,10 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
                     <Link
                       href={l.href}
                       onClick={() => setOpen(false)}
-                      className={`text-xl font-medium ${
+                      className={`block w-full text-center text-base font-semibold py-3 rounded-xl border transition-colors ${
                         pathname === l.href
-                          ? 'text-cyan-glow'
-                          : 'text-ice-white hover:text-cyan-glow'
+                          ? 'text-cyan-glow border-cyan-glow/40 bg-cyan-glow/10'
+                          : 'text-ice-white border-white/10 bg-white/5 hover:text-cyan-glow hover:border-cyan-glow/40'
                       }`}
                     >
                       {l.name}
@@ -151,19 +187,19 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
                 ))}
               </div>
 
-              <div className="w-full h-px bg-white/10 my-5" />
+              <div className="w-full h-px bg-white/10 my-4" />
 
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col gap-2">
                 {user ? (
                   <>
                     <Link
                       href="/dashboard"
                       onClick={() => setOpen(false)}
-                      className="text-lg text-ice-white hover:text-cyan-glow"
+                      className="block w-full text-center text-sm font-medium py-3 rounded-xl border border-white/10 bg-white/5 text-ice-white hover:text-cyan-glow hover:border-cyan-glow/40"
                     >
                       داشبورد
                     </Link>
-                    <button onClick={logout} className="text-lg text-red-400">
+                    <button onClick={logout} className="w-full text-center text-sm font-medium py-3 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20">
                       خروج
                     </button>
                   </>
@@ -171,7 +207,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
                   <Link
                     href="/login"
                     onClick={() => setOpen(false)}
-                    className="text-lg text-ice-white hover:text-cyan-glow"
+                    className="block w-full text-center text-sm font-medium py-3 rounded-xl border border-white/10 bg-white/5 text-ice-white hover:text-cyan-glow hover:border-cyan-glow/40"
                   >
                     دخول
                   </Link>
