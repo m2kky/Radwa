@@ -70,6 +70,9 @@ interface BookingEmailParams {
   bookingDate: string
   startTime: string
   endTime: string
+  meetingLink?: string | null
+  amount?: number
+  isPaid?: boolean
 }
 
 interface KycStatusEmailParams {
@@ -222,6 +225,9 @@ export async function sendBookingConfirmationEmail({
   bookingDate,
   startTime,
   endTime,
+  meetingLink,
+  amount = 0,
+  isPaid = true,
 }: BookingEmailParams) {
   await sendEmail({
     to,
@@ -233,7 +239,9 @@ export async function sendBookingConfirmationEmail({
         <p><strong>نوع الجلسة:</strong> ${eventTitle}</p>
         <p><strong>التاريخ:</strong> ${new Date(bookingDate).toLocaleDateString('ar-EG')}</p>
         <p><strong>الوقت:</strong> ${startTime} - ${endTime}</p>
-        <p>سيتم مشاركة تفاصيل الاتصال قبل موعد الجلسة.</p>
+        <p><strong>حالة الدفع:</strong> ${isPaid ? 'تم الدفع' : 'في انتظار الدفع'}</p>
+        ${amount > 0 ? `<p><strong>المبلغ:</strong> ${amount.toLocaleString('ar-EG')} ج.م</p>` : ''}
+        ${meetingLink ? `<p><strong>رابط الجلسة:</strong> <a href="${meetingLink}" style="color:#2E7F7F;text-decoration:none">${meetingLink}</a></p>` : '<p>سيتم مشاركة تفاصيل الاتصال قبل موعد الجلسة.</p>'}
       `
     ),
   })
@@ -247,6 +255,8 @@ export async function sendBookingAdminNotificationEmail(params: {
   bookingDate: string
   startTime: string
   endTime: string
+  meetingLink?: string | null
+  amount?: number
 }) {
   if (!NOTIFY_EMAIL) return
 
@@ -263,6 +273,52 @@ export async function sendBookingAdminNotificationEmail(params: {
         <p><strong>الجلسة:</strong> ${params.eventTitle}</p>
         <p><strong>التاريخ:</strong> ${new Date(params.bookingDate).toLocaleDateString('ar-EG')}</p>
         <p><strong>الوقت:</strong> ${params.startTime} - ${params.endTime}</p>
+        ${params.amount && params.amount > 0 ? `<p><strong>المدفوع:</strong> ${params.amount.toLocaleString('ar-EG')} ج.م</p>` : ''}
+        ${params.meetingLink ? `<p><strong>رابط الجلسة:</strong> <a href="${params.meetingLink}" style="color:#2E7F7F;text-decoration:none">${params.meetingLink}</a></p>` : ''}
+      `
+    ),
+  })
+}
+
+export async function sendBookingReminderEmail(params: {
+  to: string
+  clientName: string
+  eventTitle: string
+  bookingDate: string
+  startTime: string
+  endTime: string
+  meetingLink?: string | null
+}) {
+  await sendEmail({
+    to: params.to,
+    subject: `تذكير بموعد الجلسة — ${params.eventTitle}`,
+    html: shell(
+      'تذكير بموعد الجلسة',
+      `
+        <p>مرحبًا ${params.clientName}، هذا تذكير بموعد جلستك القادمة.</p>
+        <p><strong>الجلسة:</strong> ${params.eventTitle}</p>
+        <p><strong>التاريخ:</strong> ${new Date(params.bookingDate).toLocaleDateString('ar-EG')}</p>
+        <p><strong>الوقت:</strong> ${params.startTime} - ${params.endTime}</p>
+        ${params.meetingLink ? `<p><strong>رابط الجلسة:</strong> <a href="${params.meetingLink}" style="color:#2E7F7F;text-decoration:none">${params.meetingLink}</a></p>` : ''}
+      `
+    ),
+  })
+}
+
+export async function sendBookingFollowupEmail(params: {
+  to: string
+  clientName: string
+  eventTitle: string
+}) {
+  await sendEmail({
+    to: params.to,
+    subject: `شكرًا لحضور جلسة ${params.eventTitle}`,
+    html: shell(
+      'متابعة بعد الجلسة',
+      `
+        <p>مرحبًا ${params.clientName}، شكرًا لوقتك في جلسة <strong>${params.eventTitle}</strong>.</p>
+        <p>إذا احتجت متابعة إضافية أو جلسة جديدة، يمكنك الحجز مباشرة من صفحة الحجز.</p>
+        <p><a href="${APP_URL}/book" style="color:#2E7F7F;text-decoration:none">الذهاب لصفحة الحجز</a></p>
       `
     ),
   })

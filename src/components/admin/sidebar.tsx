@@ -36,6 +36,7 @@ const navItems = [
   { href: '/admin/availability', label: 'مواعيد التوفر', icon: Clock },
   { href: '/admin/bookings', label: 'الحجوزات', icon: ShoppingBag },
   { href: '/admin/booking-profile', label: 'بروفايل الحجز', icon: FileText },
+  { href: '/admin/popup', label: 'Popup الزوار', icon: SlidersHorizontal },
   { href: '/admin/content', label: 'محتوى الموقع', icon: SlidersHorizontal },
 ]
 

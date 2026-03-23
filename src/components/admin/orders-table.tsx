@@ -16,6 +16,9 @@ interface Order {
   status: string
   paid_amount: number
   currency: string
+  customer_email: string | null
+  customer_name: string | null
+  customer_phone: string | null
   guest_email: string | null
   guest_name: string | null
   guest_phone: string | null
@@ -91,10 +94,10 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                 return (
                 <tr key={order.id} className="border-b border-border/50 hover:bg-white/2 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="font-medium text-foreground">{order.guest_name ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground">{order.guest_email}</p>
-                    {order.guest_phone && (
-                      <p className="text-xs text-muted-foreground">{order.guest_phone}</p>
+                    <p className="font-medium text-foreground">{order.customer_name ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground">{order.customer_email ?? '—'}</p>
+                    {order.customer_phone && (
+                      <p className="text-xs text-muted-foreground">{order.customer_phone}</p>
                     )}
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">

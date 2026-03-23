@@ -10,8 +10,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: data ? `${data.title} | الحجز` : 'الحجز' };
 }
 
-export default async function BookSlugPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function BookSlugPage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ slug: string }>
+    searchParams: Promise<{ booking_paid?: string; booking_pending?: string; booking_failed?: string }>
+}) {
     const { slug } = await params;
+    const query = await searchParams;
     const supabase = createAdminClient();
     const { data: eventType } = await supabase
         .from('event_types')
@@ -23,6 +30,13 @@ export default async function BookSlugPage({ params }: { params: Promise<{ slug:
     if (!eventType) notFound();
 
     const profile = await getBookingProfile();
+    const notice = query.booking_paid
+        ? 'تم تأكيد الدفع والحجز بنجاح.'
+        : query.booking_pending
+            ? 'عملية الدفع قيد التأكيد. سيتم تحديث الحالة تلقائيًا.'
+            : query.booking_failed
+                ? 'الدفع لم يكتمل. يمكنك إعادة المحاولة.'
+                : null;
 
-    return <BookingFlow eventType={eventType} profile={profile} />;
+    return <BookingFlow eventType={eventType} profile={profile} notice={notice} />;
 }

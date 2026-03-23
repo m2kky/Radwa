@@ -179,9 +179,9 @@ export async function POST(req: NextRequest) {
       .from('orders')
       .insert({
         user_id:          user?.id ?? null,
-        guest_email:      user ? null : input.customer.email,
-        guest_name:       user ? null : input.customer.name,
-        guest_phone:      user ? null : input.customer.phone,
+        guest_email:      input.customer.email,
+        guest_name:       input.customer.name,
+        guest_phone:      input.customer.phone,
         product_id:       input.product_id,
         original_amount:  product.price,
         paid_amount:      installmentAmount, // first payment amount

@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { createAdminClient } from '@/lib/supabase/server'
 import { confirmPayment } from '@/lib/payments/confirm'
+import { finalizeBookingPayment } from '@/lib/booking-finalize'
 import { sendInstallmentPaidEmail } from '@/lib/email'
 
 interface PaymobSourceData {
@@ -231,6 +232,18 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('[paymob webhook] installment paid', installmentId)
+    return NextResponse.json({ received: true })
+  }
+
+  // Paid booking — merchant_order_id starts with 'book_'
+  if (merchantOrderId.startsWith('book_')) {
+    const bookingId = merchantOrderId.replace('book_', '')
+    const amount = Number((obj.amount_cents || 0) / 100)
+    await finalizeBookingPayment(bookingId, {
+      gatewayTxnId: String(obj.id),
+      amount,
+      forcePaid: true,
+    })
     return NextResponse.json({ received: true })
   }
 

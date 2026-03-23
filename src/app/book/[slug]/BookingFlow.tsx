@@ -43,7 +43,15 @@ function addMinutes(time: string, mins: number): string {
     return `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`;
 }
 
-export default function BookingFlow({ eventType, profile }: { eventType: EventType; profile: Profile }) {
+export default function BookingFlow({
+    eventType,
+    profile,
+    notice,
+}: {
+    eventType: EventType
+    profile: Profile
+    notice?: string | null
+}) {
     const ev = eventType;
     const p = profile;
     const [step, setStep] = useState<'calendar' | 'details' | 'success'>('calendar');
@@ -55,6 +63,7 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('card');
     const [showGuests, setShowGuests] = useState(false);
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -165,6 +174,12 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
                         {ev.duration_minutes} min
                     </div>
+                    {Number(ev.price || 0) > 0 && (
+                        <div className={s.sidebarMeta}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9a4 4 0 000 8h6a4 4 0 010 8H6" /></svg>
+                            {Number(ev.price).toLocaleString('ar-EG')} EGP
+                        </div>
+                    )}
                     {step === 'details' && selectedDateObj && selectedTime && (
                         <>
                             <div className={s.sidebarMeta}>
@@ -182,6 +197,19 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
 
                 {/* — Main Content — */}
                 <div className={s.mainContent}>
+                    {notice ? (
+                        <div style={{
+                            marginBottom: '1rem',
+                            border: '1px solid rgba(34,197,94,0.35)',
+                            background: 'rgba(34,197,94,0.1)',
+                            color: '#86efac',
+                            borderRadius: 10,
+                            padding: '0.75rem 0.9rem',
+                            fontSize: '0.85rem'
+                        }}>
+                            {notice}
+                        </div>
+                    ) : null}
                     {step === 'calendar' && (
                         <>
                             <div className={s.stepHeading}>Select a Date &amp; Time</div>
@@ -303,6 +331,48 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
                                 </div>
                             )}
 
+                            {Number(ev.price || 0) > 0 && (
+                                <div className={s.formGroup}>
+                                    <label className={s.formLabel}>الدفع</label>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('card')}
+                                            style={{
+                                                border: paymentMethod === 'card' ? '1px solid #22d3ee' : '1px solid rgba(255,255,255,0.15)',
+                                                background: paymentMethod === 'card' ? 'rgba(34,211,238,0.12)' : 'rgba(255,255,255,0.04)',
+                                                color: '#e5e7eb',
+                                                borderRadius: 10,
+                                                padding: '0.5rem 0.75rem',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            بطاقة بنكية
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('wallet')}
+                                            style={{
+                                                border: paymentMethod === 'wallet' ? '1px solid #22d3ee' : '1px solid rgba(255,255,255,0.15)',
+                                                background: paymentMethod === 'wallet' ? 'rgba(34,211,238,0.12)' : 'rgba(255,255,255,0.04)',
+                                                color: '#e5e7eb',
+                                                borderRadius: 10,
+                                                padding: '0.5rem 0.75rem',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            محفظة إلكترونية
+                                        </button>
+                                    </div>
+                                    <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.45rem' }}>
+                                        سيتم تحويلك إلى بوابة الدفع لإتمام الحجز.
+                                    </p>
+                                </div>
+                            )}
+                            <input type="hidden" name="payment_method" value={paymentMethod} />
+
                             {/* Custom Questions */}
                             {activeQuestions.map((q, i: number) => (
                                 <div key={i} className={s.formGroup}>
@@ -331,7 +401,11 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
                             {error && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{error}</p>}
 
                             <button type="submit" disabled={submitting} className={s.scheduleBtn}>
-                                {submitting ? 'Scheduling...' : 'Schedule Event'}
+                                {submitting
+                                    ? 'جاري المتابعة...'
+                                    : Number(ev.price || 0) > 0
+                                        ? `ادفع ${Number(ev.price).toLocaleString('ar-EG')} ج واحجز`
+                                        : 'تأكيد الحجز'}
                             </button>
                         </form>
                     )}

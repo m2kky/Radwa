@@ -304,7 +304,7 @@ export default function EventTypesList({ eventTypes }: { eventTypes: EditableEve
                                 <div className={s.accordionContent}>
                                     <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '0.75rem' }}>Collect payment for your event. Set to 0 for free events.</p>
                                     <div className={s.inputGroup}>
-                                        <label className={s.label}>Price ($)</label>
+                                        <label className={s.label}>Price (EGP)</label>
                                         <input type="number" step="0.01" name="price" required defaultValue={editing.price || 0} className={s.input} />
                                     </div>
                                 </div>
@@ -400,7 +400,7 @@ export default function EventTypesList({ eventTypes }: { eventTypes: EditableEve
                             <div className={s.eventMeta}>
                                 <span>{ev.duration_minutes ?? 30} min</span>
                                 <span>{ev.is_active === false ? 'Inactive' : 'One-on-One'}</span>
-                                <span style={{ marginLeft: 'auto' }}>{(ev.price ?? 0) > 0 ? `$${ev.price ?? 0}` : 'Free'}</span>
+                                <span style={{ marginLeft: 'auto' }}>{(ev.price ?? 0) > 0 ? `${Number(ev.price ?? 0).toLocaleString('ar-EG')} EGP` : 'Free'}</span>
                             </div>
                         </div>
                     </div>

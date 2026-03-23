@@ -1,10 +1,8 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/server'
-import {
-  sendBookingAdminNotificationEmail,
-  sendBookingConfirmationEmail,
-} from '@/lib/email'
+import { finalizeBookingPayment } from '@/lib/booking-finalize'
+import { initiatePaymob } from '@/lib/payments/paymob'
 
 type SlotSegment = { start_time: string; end_time: string }
 type OverrideSlot = { start: string; end: string }
@@ -151,6 +149,8 @@ export async function submitBooking(formData: FormData) {
   const bookingDate = String(formData.get('date') ?? '')
   const startTime = toHHMM(String(formData.get('time') ?? ''))
   const durationMinutes = Number.parseInt(String(formData.get('duration_minutes') ?? '30'), 10)
+  const paymentMethodRaw = String(formData.get('payment_method') ?? 'card').trim().toLowerCase()
+  const paymentMethod = paymentMethodRaw === 'wallet' ? 'wallet' : 'card'
 
   const firstName = String(formData.get('first_name') ?? '').trim()
   const lastName = String(formData.get('last_name') ?? '').trim()
@@ -183,11 +183,21 @@ export async function submitBooking(formData: FormData) {
   const admin = createAdminClient()
   const { data: eventType } = await admin
     .from('event_types')
-    .select('title, confirmation_redirect')
+    .select('title, slug, price, confirmation_redirect')
     .eq('id', eventTypeId)
     .maybeSingle()
 
-  const { error } = await admin
+  if (!eventType) {
+    return { error: 'نوع الجلسة غير موجود أو غير متاح الآن.' }
+  }
+
+  const isPaidBooking = Number(eventType.price ?? 0) > 0
+  const initialCustomAnswers: Record<string, string> = {
+    ...answers,
+    _sys_payment_method: paymentMethod,
+  }
+
+  const { data: insertedBooking, error } = await admin
     .from('bookings')
     .insert({
       event_type_id: eventTypeId,
@@ -200,44 +210,60 @@ export async function submitBooking(formData: FormData) {
       guests,
       communication_method: communicationMethod,
       notes: notes || null,
-      custom_answers: answers,
-      payment_status: 'pending',
+      custom_answers: initialCustomAnswers,
+      payment_status: isPaidBooking ? 'pending' : 'paid',
       meeting_link: 'سيتم إرسال الرابط عبر البريد',
     })
+    .select('id')
+    .single()
 
-  if (error) {
-    if (error.code === '23505') {
+  if (error || !insertedBooking) {
+    if (error?.code === '23505') {
       return { error: 'هذا الوقت تم حجزه منذ لحظات. اختر وقتًا مختلفًا.' }
     }
     console.error('[bookings] insert failed:', error)
     return { error: 'تعذر تأكيد الحجز الآن. حاول مرة أخرى.' }
   }
 
-  try {
-    const title = eventType?.title || 'جلسة استشارية'
-    await sendBookingConfirmationEmail({
-      to: clientEmail,
-      clientName,
-      eventTitle: title,
-      bookingDate,
-      startTime,
-      endTime,
-    })
-    await sendBookingAdminNotificationEmail({
-      clientName,
-      clientEmail,
-      clientPhone,
-      eventTitle: title,
-      bookingDate,
-      startTime,
-      endTime,
-    })
-  } catch (emailError) {
-    console.error('[bookings] confirmation email failed:', emailError)
+  if (isPaidBooking) {
+    try {
+      const paymentUrl = await initiatePaymob(
+        {
+          orderId: `book_${insertedBooking.id}`,
+          amount: Number(eventType.price ?? 0),
+          currency: 'EGP',
+          customer: {
+            name: clientName,
+            email: clientEmail,
+            phone: clientPhone || '01000000000',
+          },
+          productTitle: `حجز جلسة: ${eventType.title || 'جلسة استشارية'}`,
+        },
+        paymentMethod
+      )
+
+      return {
+        success: true,
+        redirect: paymentUrl,
+      }
+    } catch (paymentError) {
+      console.error('[bookings] payment init failed:', paymentError)
+      await admin
+        .from('bookings')
+        .update({ payment_status: 'cancelled' })
+        .eq('id', insertedBooking.id)
+
+      return { error: 'تعذر بدء عملية الدفع. حاول مرة أخرى.' }
+    }
   }
+
+  await finalizeBookingPayment(insertedBooking.id, {
+    amount: 0,
+    forcePaid: true,
+  })
 
   return {
     success: true,
-    redirect: eventType?.confirmation_redirect || null,
+    redirect: eventType.confirmation_redirect || null,
   }
 }
