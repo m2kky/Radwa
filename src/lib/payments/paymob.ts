@@ -39,12 +39,13 @@ export async function initiatePaymob(
   const integrationId = method === 'wallet' ? integrationIdWallet : integrationIdCard
   const iframeIdCard = process.env.PAYMOB_IFRAME_ID
   const iframeId = iframeIdCard
+  const cardCheckoutMode = (process.env.PAYMOB_CARD_CHECKOUT_MODE || 'iframe').trim().toLowerCase()
 
   if (!apiKey) {
     throw new Error('Paymob environment variables not configured')
   }
 
-  if (method === 'card' && !iframeId) {
+  if (method === 'card' && cardCheckoutMode === 'iframe' && !iframeId) {
     throw new Error('Paymob card iframe id not configured')
   }
 
@@ -171,6 +172,19 @@ export async function initiatePaymob(
     }
 
     return redirectUrl
+  }
+
+  // Optional fallback for card payments: bypass iframe and use Paymob hosted checkout page.
+  // Useful when iframe configuration drifts on dashboard side.
+  if (cardCheckoutMode === 'hosted' && typeof paymobOrder?.order_url === 'string' && paymobOrder.order_url.length > 0) {
+    return paymobOrder.order_url
+  }
+
+  if (!iframeId) {
+    if (typeof paymobOrder?.order_url === 'string' && paymobOrder.order_url.length > 0) {
+      return paymobOrder.order_url
+    }
+    throw new Error('Paymob card iframe id not configured and hosted checkout URL missing')
   }
 
   return `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`
