@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, CreditCard, Smartphone } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
 import type { Product } from '@/types'
 
@@ -24,9 +25,75 @@ type FormData = z.infer<typeof schema>
 type Method  = 'card' | 'wallet'
 type Plan    = 'full' | '2' | '4'
 
-const PAYMOB_METHODS  = [
-  { id: 'card'   as Method, label: 'بطاقة بنكية',  icon: CreditCard },
-  { id: 'wallet' as Method, label: 'محفظة إلكترونية', icon: Smartphone },
+const PAYMOB_METHODS: Array<{
+  id: Method
+  label: string
+  description: string
+  helper: string
+  brands: Array<{
+    key: string
+    label: string
+    src?: string
+    badgeClass?: string
+    logoClass?: string
+    textClass?: string
+  }>
+}> = [
+  {
+    id: 'card',
+    label: 'بطاقة بنكية',
+    description: 'ادفع مباشرة ببطاقات البنك.',
+    helper: 'يدعم بطاقات Visa و Mastercard.',
+    brands: [
+      {
+        key: 'visa',
+        label: 'Visa',
+        src: '/payment/visa.svg',
+        badgeClass: 'bg-white border-white/80',
+      },
+      {
+        key: 'mastercard',
+        label: 'Mastercard',
+        src: '/payment/mastercard-colored.svg',
+        badgeClass: 'bg-white border-white/80',
+        logoClass: 'h-5',
+      },
+      {
+        key: 'meeza',
+        label: 'Meeza',
+        badgeClass: 'bg-[#0A2A5E] border-[#0A2A5E]',
+        textClass: 'text-white',
+      },
+    ],
+  },
+  {
+    id: 'wallet',
+    label: 'محفظة إلكترونية',
+    description: 'ادفع برقم الموبايل من محفظتك.',
+    helper: 'Vodafone Cash و Orange Cash ومحافظ أخرى عبر Paymob.',
+    brands: [
+      {
+        key: 'vodafone',
+        label: 'Vodafone Cash',
+        src: '/payment/vodafone.svg',
+        badgeClass: 'bg-[#E60000] border-[#E60000]',
+        logoClass: 'brightness-0 invert',
+      },
+      {
+        key: 'orange',
+        label: 'Orange Cash',
+        src: '/payment/orange.svg',
+        badgeClass: 'bg-[#FF7900] border-[#FF7900]',
+        logoClass: 'brightness-0 invert',
+      },
+      {
+        key: 'etisalat',
+        label: 'Etisalat Cash',
+        badgeClass: 'bg-[#22A447] border-[#22A447]',
+        textClass: 'text-white',
+      },
+    ],
+  },
 ]
 
 export function CheckoutForm({ product }: { product: Product }) {
@@ -201,23 +268,71 @@ export function CheckoutForm({ product }: { product: Product }) {
       <div className="flex flex-col gap-3">
         <Label>وسيلة الدفع عبر Paymob</Label>
         <div className="rounded-xl border border-border p-4">
-          <div className="flex gap-2">
-            {PAYMOB_METHODS.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                disabled={loading}
-                onClick={() => setMethod(m.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${
-                  method === m.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground'
-                }`}
-              >
-                {m.icon && <m.icon className="w-3 h-3" />}
-                {m.label}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {PAYMOB_METHODS.map((m) => {
+              const isActive = method === m.id
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => setMethod(m.id)}
+                  aria-pressed={isActive}
+                  className={`rounded-2xl border px-4 py-4 text-right min-h-[120px] transition-all ${
+                    isActive
+                      ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_rgba(6,182,212,0.3)]'
+                      : 'border-border bg-card hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                        {m.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{m.description}</p>
+                    </div>
+                    <span
+                      className={`mt-0.5 h-5 w-5 rounded-full border flex items-center justify-center ${
+                        isActive ? 'border-primary bg-primary/15' : 'border-border bg-background'
+                      }`}
+                    >
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full transition-all ${
+                          isActive ? 'bg-primary scale-100' : 'bg-transparent scale-0'
+                        }`}
+                      />
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {m.brands.map((brand) => (
+                      <span
+                        key={brand.key}
+                        className={`inline-flex h-9 min-w-[78px] items-center justify-center rounded-lg border px-2 ${
+                          brand.badgeClass ?? 'bg-white border-white/80'
+                        }`}
+                      >
+                        {brand.src ? (
+                          <Image
+                            src={brand.src}
+                            alt={brand.label}
+                            width={80}
+                            height={26}
+                            className={`h-4 w-auto object-contain ${brand.logoClass ?? ''}`}
+                          />
+                        ) : (
+                          <span className={`text-[11px] font-semibold ${brand.textClass ?? 'text-foreground'}`}>
+                            {brand.label}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="mt-2 text-[11px] text-muted-foreground">{m.helper}</p>
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>

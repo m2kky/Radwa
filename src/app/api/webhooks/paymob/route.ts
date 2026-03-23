@@ -83,18 +83,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
   }
 
-  // Verify HMAC
-  const receivedHmac = req.nextUrl.searchParams.get('hmac')
-  if (!receivedHmac) {
-    return NextResponse.json({ error: 'Missing HMAC' }, { status: 401 })
-  }
-
   let payload: unknown
   try {
     payload = JSON.parse(body)
   } catch {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
+
+  const bodyObject = payload && typeof payload === 'object'
+    ? payload as Record<string, unknown>
+    : null
+
+  // Accept HMAC from query (common), body, or header for compatibility across callback setups.
+  const receivedHmacRaw =
+    req.nextUrl.searchParams.get('hmac') ||
+    (typeof bodyObject?.hmac === 'string' ? bodyObject.hmac : null) ||
+    req.headers.get('x-paymob-hmac') ||
+    req.headers.get('x-hmac')
+
+  if (!receivedHmacRaw) {
+    console.error('[paymob webhook] missing HMAC in query/body/header')
+    return NextResponse.json({ error: 'Missing HMAC' }, { status: 401 })
+  }
+  const receivedHmac = receivedHmacRaw.toLowerCase()
 
   if (!payload || typeof payload !== 'object' || !('obj' in payload)) {
     return NextResponse.json({ error: 'Invalid payload structure' }, { status: 400 })
@@ -134,7 +145,7 @@ export async function POST(req: NextRequest) {
     .update(hmacString)
     .digest('hex')
 
-  if (expectedHmac !== receivedHmac.toLowerCase()) {
+  if (expectedHmac !== receivedHmac) {
     console.error('[paymob webhook] HMAC mismatch')
     return NextResponse.json({ error: 'Invalid HMAC' }, { status: 401 })
   }
