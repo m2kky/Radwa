@@ -13,6 +13,7 @@
 import { useState } from 'react'
 import { z } from 'zod'
 import { Loader2, CheckCircle } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 const schema = z.object({
   name: z.string().min(2),
@@ -64,6 +65,10 @@ export default function ContactForm({
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error?.message ?? 'فشل إرسال الطلب')
+      trackEvent('generate_lead', {
+        form_name: 'contact_form',
+        service: result.data.service,
+      })
       setSuccess(true)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'فشل إرسال الطلب')

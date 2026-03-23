@@ -47,6 +47,25 @@ export default async function Home() {
     featured_image_url: post.featured_image_url ?? post.thumbnail_url ?? '',
   }))
 
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: contentSettings.siteGeneral.display_name || 'Radwa Muhammed',
+    url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.radwamuhammed.com',
+    logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.radwamuhammed.com'}/radwa.jpg`,
+    sameAs: [],
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'customer support',
+        email: contentSettings.siteGeneral.contact_email || undefined,
+        telephone: contentSettings.siteGeneral.contact_phone || undefined,
+        areaServed: 'EG',
+        availableLanguage: ['ar', 'en'],
+      },
+    ],
+  }
+
   return (
     <div className="flex flex-col w-full">
       <Hero />
@@ -64,6 +83,10 @@ export default async function Home() {
       <ContactForm
         contactEmail={contentSettings.siteGeneral.contact_email}
         contactPhone={contentSettings.siteGeneral.contact_phone}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
     </div>
   )

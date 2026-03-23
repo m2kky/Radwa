@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { getAvailableSlots, submitBooking } from '@/app/api/bookings/actions';
+import { trackEvent } from '@/lib/analytics';
 import s from '../Booking.module.css';
 
 interface EventType {
@@ -112,8 +113,18 @@ export default function BookingFlow({ eventType, profile }: { eventType: EventTy
         if (r?.error) {
             setError(r.error);
         } else if (r?.redirect) {
+            trackEvent('begin_checkout', {
+                form_name: 'booking',
+                event_type: ev.title,
+                value: ev.price ?? 0,
+            });
             window.location.href = r.redirect;
         } else {
+            trackEvent('generate_lead', {
+                form_name: 'booking',
+                event_type: ev.title,
+                event_slug: ev.slug,
+            });
             setStep('success');
         }
     };

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, CreditCard, Smartphone } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 import type { Product } from '@/types'
 
 const schema = z.object({
@@ -65,7 +66,15 @@ export function CheckoutForm({ product }: { product: Product }) {
         setError(data?.error?.message ?? 'كود الخصم غير صالح')
         return
       }
-      setCouponOk(typeof data?.data?.discount_amount === 'number' ? data.data.discount_amount : null)
+      const discountAmount = typeof data?.data?.discount_amount === 'number'
+        ? data.data.discount_amount
+        : null
+      setCouponOk(discountAmount)
+      trackEvent('apply_coupon', {
+        coupon: code.trim().toUpperCase(),
+        value: discountAmount ?? 0,
+        currency: 'EGP',
+      })
     } catch {
       setCouponOk(null)
       setError('تعذر التحقق من الكوبون الآن')
@@ -78,6 +87,21 @@ export function CheckoutForm({ product }: { product: Product }) {
     setLoading(true)
     setError(null)
     try {
+      trackEvent('begin_checkout', {
+        currency: 'EGP',
+        value: basePrice,
+        payment_type: method,
+        installment_plan: plan,
+        items: [
+          {
+            item_id: product.id,
+            item_name: product.title,
+            price: product.price,
+            quantity: 1,
+          },
+        ],
+      })
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

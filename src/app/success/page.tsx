@@ -13,6 +13,7 @@
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
+import PurchaseTracker from '@/components/analytics/purchase-tracker'
 
 interface Props {
   searchParams: Promise<{ token?: string; order?: string }>
@@ -25,6 +26,8 @@ export default async function SuccessPage({ searchParams }: Props) {
 
   let tokenRow: {
     token: string
+    order_id: string
+    product_id: string
     expires_at: string | null
     download_count: number
     max_downloads: number
@@ -34,14 +37,14 @@ export default async function SuccessPage({ searchParams }: Props) {
   if (queryToken) {
     const { data } = await admin
       .from('download_tokens')
-      .select('token, expires_at, download_count, max_downloads, products(title)')
+      .select('token, order_id, product_id, expires_at, download_count, max_downloads, products(title)')
       .eq('token', queryToken)
       .maybeSingle()
     tokenRow = data
   } else if (order) {
     const { data } = await admin
       .from('download_tokens')
-      .select('token, expires_at, download_count, max_downloads, products(title)')
+      .select('token, order_id, product_id, expires_at, download_count, max_downloads, products(title)')
       .eq('order_id', order)
       .not('expires_at', 'is', null)
       .order('created_at', { ascending: false })
@@ -70,11 +73,27 @@ export default async function SuccessPage({ searchParams }: Props) {
 
   const product = Array.isArray(tokenRow.products) ? tokenRow.products[0] : tokenRow.products
 
+  const { data: orderRow } = await admin
+    .from('orders')
+    .select('id, paid_amount, currency, coupon_code')
+    .eq('id', tokenRow.order_id)
+    .maybeSingle()
+
   const isExpired = tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()
   const isExhausted = tokenRow.download_count >= tokenRow.max_downloads
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
+      {orderRow ? (
+        <PurchaseTracker
+          orderId={orderRow.id}
+          amount={orderRow.paid_amount}
+          currency={orderRow.currency ?? 'EGP'}
+          productId={tokenRow.product_id}
+          productName={product?.title ?? undefined}
+          coupon={orderRow.coupon_code}
+        />
+      ) : null}
       <div className="max-w-md w-full text-center space-y-6">
         <div className="text-5xl">🎉</div>
         <h1 className="text-2xl font-bold font-serif">تم الدفع بنجاح!</h1>

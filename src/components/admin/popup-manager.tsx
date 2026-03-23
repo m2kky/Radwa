@@ -103,6 +103,44 @@ export default function PopupManager({
     }
   }
 
+  const remove = async () => {
+    if (!form.id) return
+    const confirmed = window.confirm('هل تريد حذف هذا الـ popup نهائيًا؟')
+    if (!confirmed) return
+
+    setLoading(true)
+    setMessage(null)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/admin/popup', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: form.id }),
+      })
+      const json = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(json?.error?.message ?? 'فشل حذف الـ popup')
+
+      setForm({
+        id: undefined,
+        title: '',
+        message: '',
+        cta_text: '',
+        cta_url: '',
+        image_url: '',
+        is_active: false,
+        show_once: true,
+        start_at: '',
+        end_at: '',
+      })
+      setMessage('تم حذف الـ popup بنجاح')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'حدث خطأ أثناء الحذف')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="bg-cold-dark border border-border rounded-xl p-5 space-y-4">
       <div>
@@ -229,6 +267,16 @@ export default function PopupManager({
         >
           تعطيل الـ Popup
         </button>
+        {form.id && (
+          <button
+            type="button"
+            onClick={remove}
+            disabled={loading}
+            className="border border-red-500/40 text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg text-sm"
+          >
+            حذف الـ Popup
+          </button>
+        )}
       </div>
     </div>
   )

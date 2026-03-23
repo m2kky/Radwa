@@ -15,6 +15,10 @@ const popupSchema = z.object({
   end_at: z.string().datetime().optional().nullable(),
 })
 
+const deleteSchema = z.object({
+  id: z.string().uuid(),
+})
+
 export async function GET() {
   try {
     const admin = createAdminClient()
@@ -105,6 +109,35 @@ export async function POST(req: NextRequest) {
     console.error('[admin/popup] POST failed:', error)
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: 'Failed to save popup settings' } },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id } = deleteSchema.parse(body)
+    const admin = createAdminClient()
+
+    const { error } = await admin
+      .from('site_popups')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: { code: 'VALIDATION_ERROR', message: error.issues } },
+        { status: 400 }
+      )
+    }
+
+    console.error('[admin/popup] DELETE failed:', error)
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Failed to delete popup' } },
       { status: 500 }
     )
   }

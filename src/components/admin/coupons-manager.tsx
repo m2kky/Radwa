@@ -10,7 +10,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { Coupon } from '@/types'
 
 interface NewCoupon {
@@ -37,10 +37,12 @@ const EMPTY: NewCoupon = {
 
 export default function CouponsManager({ initialCoupons }: { initialCoupons: Coupon[] }) {
   const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<NewCoupon>(EMPTY)
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const set = (k: keyof NewCoupon, v: string) => setForm((p) => ({ ...p, [k]: v }))
@@ -139,8 +141,101 @@ export default function CouponsManager({ initialCoupons }: { initialCoupons: Cou
     })
   }
 
+  const toggleSelect = (id: string, checked: boolean) => {
+    setSelectedIds((prev) =>
+      checked ? Array.from(new Set([...prev, id])) : prev.filter((item) => item !== id)
+    )
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? coupons.map((coupon) => coupon.id) : [])
+  }
+
+  const removeCoupon = async (id: string) => {
+    const confirmed = window.confirm('هل أنت متأكد من حذف هذا الكوبون؟')
+    if (!confirmed) return
+
+    setActionLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error?.message ?? 'فشل حذف الكوبون')
+      }
+
+      setCoupons((prev) => prev.filter((coupon) => coupon.id !== id))
+      setSelectedIds((prev) => prev.filter((item) => item !== id))
+      if (editingId === id) resetForm()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل حذف الكوبون')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const bulkSetActive = async (is_active: boolean) => {
+    if (selectedIds.length === 0) return
+
+    setActionLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, is_active }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(data?.error?.message ?? 'فشل تحديث الكوبونات')
+
+      const selected = new Set(selectedIds)
+      setCoupons((prev) =>
+        prev.map((coupon) =>
+          selected.has(coupon.id) ? { ...coupon, is_active } : coupon
+        )
+      )
+      setSelectedIds([])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل تحديث الكوبونات')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const bulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    const confirmed = window.confirm(`حذف ${selectedIds.length} كوبون نهائيًا؟`)
+    if (!confirmed) return
+
+    setActionLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(data?.error?.message ?? 'فشل الحذف الجماعي')
+
+      const selected = new Set(selectedIds)
+      setCoupons((prev) => prev.filter((coupon) => !selected.has(coupon.id)))
+      setSelectedIds([])
+      if (editingId && selected.has(editingId)) resetForm()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل الحذف الجماعي')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const inputClass = 'w-full bg-cold-black border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-glow/50'
   const labelClass = 'block text-xs font-medium text-muted-foreground mb-1'
+  const allSelected = coupons.length > 0 && selectedIds.length === coupons.length
 
   return (
     <div className="space-y-6">
@@ -285,58 +380,121 @@ export default function CouponsManager({ initialCoupons }: { initialCoupons: Cou
 
       {/* Coupons table */}
       <div className="bg-cold-dark border border-border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-muted-foreground">
-              <th className="text-right px-6 py-3 font-medium">الكود</th>
-              <th className="text-right px-6 py-3 font-medium">الخصم</th>
-              <th className="text-right px-6 py-3 font-medium">الاستخدام</th>
-              <th className="text-right px-6 py-3 font-medium">الصلاحية</th>
-              <th className="text-right px-6 py-3 font-medium">مفعّل</th>
-              <th className="text-right px-6 py-3 font-medium">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coupons.map((c) => (
-              <tr key={c.id} className="border-b border-border/50 hover:bg-white/2 transition-colors">
-                <td className="px-6 py-4 font-mono font-bold text-cyan-glow">{c.code}</td>
-                <td className="px-6 py-4 text-foreground">
-                  {c.discount_type === 'percentage'
-                    ? `${c.discount_value}%`
-                    : `${c.discount_value} EGP`}
-                  {c.min_amount && (
-                    <span className="block text-xs text-muted-foreground">حد أدنى: {c.min_amount} EGP</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-muted-foreground">
-                  {c.usage_count}
-                  {c.max_uses ? ` / ${c.max_uses}` : ''}
-                </td>
-                <td className="px-6 py-4 text-muted-foreground text-xs">
-                  {c.valid_until
-                    ? new Date(c.valid_until).toLocaleDateString('ar-EG')
-                    : 'بلا انتهاء'}
-                </td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => toggleActive(c.id, !c.is_active)}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${c.is_active ? 'bg-cyan-glow' : 'bg-zinc-700'}`}
-                  >
-                    <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${c.is_active ? 'right-0.5' : 'left-0.5'}`} />
-                  </button>
-                </td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => startEdit(c)}
-                    className="text-xs text-cyan-glow hover:underline"
-                  >
-                    تعديل
-                  </button>
-                </td>
+        {selectedIds.length > 0 && (
+          <div className="px-4 py-3 border-b border-border bg-white/5 flex flex-wrap items-center gap-2">
+            <span className="text-sm text-foreground">
+              تم تحديد {selectedIds.length} كوبون
+            </span>
+            <button
+              type="button"
+              onClick={() => bulkSetActive(true)}
+              disabled={actionLoading}
+              className="px-3 py-1.5 rounded-lg text-xs border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-60"
+            >
+              تفعيل
+            </button>
+            <button
+              type="button"
+              onClick={() => bulkSetActive(false)}
+              disabled={actionLoading}
+              className="px-3 py-1.5 rounded-lg text-xs border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10 disabled:opacity-60"
+            >
+              تعطيل
+            </button>
+            <button
+              type="button"
+              onClick={bulkDelete}
+              disabled={actionLoading}
+              className="px-3 py-1.5 rounded-lg text-xs border border-red-500/40 text-red-300 hover:bg-red-500/10 disabled:opacity-60"
+            >
+              حذف جماعي
+            </button>
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px] text-sm">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground">
+                <th className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                    className="accent-cyan-glow"
+                    aria-label="تحديد الكل"
+                  />
+                </th>
+                <th className="text-right px-6 py-3 font-medium">الكود</th>
+                <th className="text-right px-6 py-3 font-medium">الخصم</th>
+                <th className="text-right px-6 py-3 font-medium">الاستخدام</th>
+                <th className="text-right px-6 py-3 font-medium">الصلاحية</th>
+                <th className="text-right px-6 py-3 font-medium">مفعّل</th>
+                <th className="text-right px-6 py-3 font-medium">إجراءات</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {coupons.map((c) => (
+                <tr key={c.id} className="border-b border-border/50 hover:bg-white/2 transition-colors">
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(c.id)}
+                      onChange={(e) => toggleSelect(c.id, e.target.checked)}
+                      className="accent-cyan-glow"
+                      aria-label={`تحديد ${c.code}`}
+                    />
+                  </td>
+                  <td className="px-6 py-4 font-mono font-bold text-cyan-glow">{c.code}</td>
+                  <td className="px-6 py-4 text-foreground">
+                    {c.discount_type === 'percentage'
+                      ? `${c.discount_value}%`
+                      : `${c.discount_value} EGP`}
+                    {c.min_amount && (
+                      <span className="block text-xs text-muted-foreground">حد أدنى: {c.min_amount} EGP</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {c.usage_count}
+                    {c.max_uses ? ` / ${c.max_uses}` : ''}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground text-xs">
+                    {c.valid_until
+                      ? new Date(c.valid_until).toLocaleDateString('ar-EG')
+                      : 'بلا انتهاء'}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => toggleActive(c.id, !c.is_active)}
+                      className={`w-10 h-5 rounded-full transition-colors relative ${c.is_active ? 'bg-cyan-glow' : 'bg-zinc-700'}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${c.is_active ? 'right-0.5' : 'left-0.5'}`} />
+                    </button>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => startEdit(c)}
+                        className="text-xs text-cyan-glow hover:underline"
+                      >
+                        تعديل
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeCoupon(c.id)}
+                        disabled={actionLoading}
+                        className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-60"
+                      >
+                        <Trash2 size={13} />
+                        حذف
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {coupons.length === 0 && (
           <p className="text-center text-muted-foreground py-12">لا توجد كوبونات بعد</p>
         )}

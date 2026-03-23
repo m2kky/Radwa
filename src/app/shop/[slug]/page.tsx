@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { CheckoutForm } from '@/components/features/checkout-form'
+import ProductStickyBuyBar from '@/components/features/product-sticky-buy-bar'
+import FAQSection from '@/components/features/faq-section'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, Package } from 'lucide-react'
 import type { Product } from '@/types'
@@ -51,6 +53,51 @@ export default async function ProductPage({ params }: Props) {
   const discount = product.compare_at_price
     ? Math.round((1 - product.price / product.compare_at_price) * 100)
     : null
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description ?? '',
+    image: product.thumbnail_url ? [product.thumbnail_url] : [],
+    sku: product.slug,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'EGP',
+      price: product.price,
+      availability: 'https://schema.org/InStock',
+      url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.radwamuhammed.com'}/shop/${product.slug}`,
+    },
+  }
+
+  const faqItems = [
+    {
+      question: 'كيف أستلم المنتج بعد الدفع؟',
+      answer: 'بعد نجاح الدفع ستظهر صفحة التحميل مباشرة، وسيصلك أيضًا رابط دائم على البريد الإلكتروني.',
+    },
+    {
+      question: 'هل يمكن الدفع بالمحفظة أو البطاقة؟',
+      answer: 'نعم، بوابة Paymob تدعم الدفع بالبطاقة البنكية أو المحفظة الإلكترونية.',
+    },
+    {
+      question: 'هل التقسيط متاح لهذا المنتج؟',
+      answer: product.installments_enabled
+        ? 'نعم، هذا المنتج يدعم التقسيط بعد تفعيل حالة KYC من حسابك.'
+        : 'لا، هذا المنتج متاح حاليًا بدفعة واحدة فقط.',
+    },
+  ]
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -140,10 +187,26 @@ export default async function ProductPage({ params }: Props) {
             </div>
 
             {/* Checkout Form */}
-            <CheckoutForm product={product} />
+            <div id="checkout-form">
+              <CheckoutForm product={product} />
+            </div>
           </div>
         </div>
       </div>
+      <FAQSection
+        title="أسئلة شائعة عن المنتج"
+        subtitle="كل ما تحتاج معرفته قبل إتمام الشراء."
+        items={faqItems}
+      />
+      <ProductStickyBuyBar title={product.title} price={product.price} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
     </main>
   )
 }

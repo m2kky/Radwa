@@ -41,6 +41,16 @@ const updateSchema = z.object({
   is_active: z.boolean().optional(),
 })
 
+const bulkActiveSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1),
+  is_active: z.boolean(),
+})
+
+const deleteSchema = z.union([
+  z.object({ id: z.string().uuid() }),
+  z.object({ ids: z.array(z.string().uuid()).min(1) }),
+])
+
 export async function GET(_req: NextRequest) {
   try {
     const supabase = createAdminClient()
@@ -101,6 +111,19 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
+    const bulkParsed = bulkActiveSchema.safeParse(body)
+    if (bulkParsed.success) {
+      const supabase = createAdminClient()
+      const { data, error } = await supabase
+        .from('coupons')
+        .update({ is_active: bulkParsed.data.is_active })
+        .in('id', bulkParsed.data.ids)
+        .select('*')
+
+      if (error) throw error
+      return NextResponse.json({ success: true, data })
+    }
+
     const parsed = updateSchema.parse(body)
     const { id, ...incoming } = parsed
 
@@ -143,6 +166,35 @@ export async function PATCH(req: NextRequest) {
     console.error('[Admin Coupons PATCH]', error)
     return NextResponse.json(
       { error: { code: 'INTERNAL_ERROR', message: 'Failed to update coupon' } },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const parsed = deleteSchema.parse(body)
+    const ids = 'id' in parsed ? [parsed.id] : parsed.ids
+
+    const supabase = createAdminClient()
+    const { error } = await supabase
+      .from('coupons')
+      .delete()
+      .in('id', ids)
+
+    if (error) throw error
+    return NextResponse.json({ success: true, data: { deleted: ids.length } })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: { code: 'VALIDATION_ERROR', message: error.issues } },
+        { status: 400 }
+      )
+    }
+    console.error('[Admin Coupons DELETE]', error)
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Failed to delete coupon(s)' } },
       { status: 500 }
     )
   }
