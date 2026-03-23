@@ -49,9 +49,34 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
   }, [pathname])
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
+    if (!open) return
+
+    const scrollY = window.scrollY
+    const prevHtmlOverflow = document.documentElement.style.overflow
+    const prevBodyOverflow = document.body.style.overflow
+    const prevBodyPosition = document.body.style.position
+    const prevBodyTop = document.body.style.top
+    const prevBodyLeft = document.body.style.left
+    const prevBodyRight = document.body.style.right
+    const prevBodyWidth = document.body.style.width
+
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.width = '100%'
+
     return () => {
-      document.body.style.overflow = ''
+      document.documentElement.style.overflow = prevHtmlOverflow
+      document.body.style.overflow = prevBodyOverflow
+      document.body.style.position = prevBodyPosition
+      document.body.style.top = prevBodyTop
+      document.body.style.left = prevBodyLeft
+      document.body.style.right = prevBodyRight
+      document.body.style.width = prevBodyWidth
+      window.scrollTo(0, scrollY)
     }
   }, [open])
 
@@ -145,7 +170,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
               key="mobile-menu-backdrop"
               type="button"
               aria-label="إغلاق القائمة"
-              className="fixed inset-0 z-40 md:hidden bg-cold-black/65 backdrop-blur-sm"
+              className="fixed inset-0 z-[70] md:hidden bg-cold-black/70 backdrop-blur-md supports-[backdrop-filter]:bg-cold-black/55"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -155,7 +180,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
 
             <motion.div
               key="mobile-menu-panel"
-              className="fixed left-1/2 z-50 md:hidden w-[min(92vw,420px)] -translate-x-1/2 rounded-3xl border border-cyan-glow/20 bg-cold-black/95 backdrop-blur-2xl shadow-2xl p-4"
+              className="fixed left-1/2 z-[80] md:hidden w-[min(92vw,420px)] -translate-x-1/2 rounded-3xl border border-cyan-glow/25 bg-cold-black/95 backdrop-blur-2xl shadow-2xl p-4"
               style={{ top: menuTop, maxHeight: `calc(100dvh - ${menuTop + 12}px)`, overflowY: 'auto' }}
               initial={{ opacity: 0, y: -14, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
