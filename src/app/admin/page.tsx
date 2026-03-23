@@ -85,6 +85,17 @@ async function getLatestPopup() {
   return data ?? null
 }
 
+async function getRecentPopupLeads() {
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('popup_leads')
+    .select('id, popup_id, name, email, phone, source_path, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  return data ?? []
+}
+
 interface BookingOverview {
   totalBookings: number
   upcomingBookings: number
@@ -160,11 +171,12 @@ const statusLabels: Record<string, string> = {
 }
 
 export default async function AdminDashboard() {
-  const [stats, recentOrders, recentContacts, latestPopup, bookingOverview, upcomingBookings] = await Promise.all([
+  const [stats, recentOrders, recentContacts, latestPopup, recentPopupLeads, bookingOverview, upcomingBookings] = await Promise.all([
     getStats(),
     getRecentOrders(),
     getRecentContacts(),
     getLatestPopup(),
+    getRecentPopupLeads(),
     getBookingOverview(),
     getUpcomingBookings(),
   ])
@@ -310,7 +322,10 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <PopupManager initialPopup={latestPopup as Record<string, unknown> | null} />
+      <PopupManager
+        initialPopup={latestPopup as Record<string, unknown> | null}
+        initialLeads={recentPopupLeads as Array<Record<string, unknown>>}
+      />
 
       <div className="bg-cold-dark border border-border rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
