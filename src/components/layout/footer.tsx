@@ -20,6 +20,7 @@ export default function Footer({ settings }: { settings: SiteGeneralSettings }) 
             <p>{settings.contact_email}</p>
             <p>{settings.contact_phone}</p>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">اسكندرية, مصر</p>
         </div>
         <div>
           <h3 className="font-semibold mb-3 text-sm">روابط</h3>
