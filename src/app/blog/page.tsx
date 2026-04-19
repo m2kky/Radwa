@@ -4,13 +4,13 @@
  * @author Agent (Antigravity)
  * @created 2026-02-15
  */
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import BlogCard from '@/components/blog/blog-card'
 
 export const metadata = { title: 'المدونة' }
 
 export default async function BlogPage() {
-  const admin = createAdminClient()
+  const supabase = await createClient()
 
   interface Post {
     id: string
@@ -24,7 +24,7 @@ export default async function BlogPage() {
     is_featured?: boolean
   }
 
-  const { data: posts } = await admin
+  const { data: posts } = await supabase
     .from('blog_posts')
     .select('id, slug, title, excerpt, thumbnail_url, featured_image_url, category, published_at, is_featured')
     .eq('status', 'published')

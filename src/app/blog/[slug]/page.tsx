@@ -7,23 +7,23 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 interface Props { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const admin = createAdminClient()
-  const { data } = await admin.from('blog_posts').select('title, excerpt').eq('slug', slug).single()
+  const supabase = await createClient()
+  const { data } = await supabase.from('blog_posts').select('title, excerpt').eq('slug', slug).single()
   return { title: data?.title, description: data?.excerpt ?? undefined }
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
-  const admin = createAdminClient()
+  const supabase = await createClient()
 
-  const { data: post } = await admin
+  const { data: post } = await supabase
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
