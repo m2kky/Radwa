@@ -1,11 +1,11 @@
-import { createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { getBookingProfile } from '@/app/admin/booking-profile/actions';
 import BookingFlow from './BookingFlow';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data } = await supabase.from('event_types').select('title').eq('slug', slug).single();
     return { title: data ? `${data.title} | الحجز` : 'الحجز' };
 }
@@ -19,7 +19,7 @@ export default async function BookSlugPage({
 }) {
     const { slug } = await params;
     const query = await searchParams;
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data: eventType } = await supabase
         .from('event_types')
         .select('*')

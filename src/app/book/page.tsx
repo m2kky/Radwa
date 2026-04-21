@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { getBookingProfile } from '../admin/booking-profile/actions'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import s from './Booking.module.css'
 export const metadata = { title: 'احجزي جلسة' }
 
 export default async function BookPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const profile = await getBookingProfile()
   const { data: eventTypes } = await supabase
     .from('event_types')
