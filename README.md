@@ -1,38 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Radwa Muhammed Official Platform
 
-## Getting Started
+The official digital platform for Radwa Muhammed. This platform includes an e-commerce store for digital products, a consultation booking system, a blog, and a dynamic pop-up system, all managed through a comprehensive admin dashboard.
 
-First, run the development server:
+## 🌟 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Store & E-commerce:** Browse and purchase digital products with secure payments via Paymob.
+- **Guest & Authenticated Checkout:** Seamless checkout experience with support for one-time guest purchases and persistent accounts.
+- **Consultation Booking System:** Book online sessions with automated Google Calendar integration and reminders.
+- **Installment Payments:** Support for installment plans and automated billing reminders.
+- **Admin Dashboard:** Full control over content, products, bookings, coupons, and site settings.
+- **Dynamic Pop-ups:** Smart, customizable pop-ups for lead generation and announcements.
+- **Blog:** SEO-optimized content management for articles and updates.
+
+## 🛠️ Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL)
+- **Payments:** [Paymob](https://paymob.com/)
+- **Storage:** Cloudflare R2 / Supabase Storage
+- **Deployment:** [Vercel](https://vercel.com/)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm, yarn, or pnpm
+- Supabase Project
+- Paymob Account
+
+### Environment Variables
+Create a `.env.local` file in the root directory and add your environment variables (Supabase URL/Keys, Paymob credentials, etc.):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_key
+# Add other required keys...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install the dependencies:
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Run the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To learn more about Next.js, take a look at the following resources:
+## 📦 Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is optimized for deployment on Vercel. 
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If your Vercel project is linked to the GitHub repository, pushing to the `main` branch will automatically trigger a production deployment. (Ensure that `main` is set as your Production Branch in Vercel settings).
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-
+To deploy manually via CLI:
+```bash
+npm i -g vercel
+vercel --prod
+```
