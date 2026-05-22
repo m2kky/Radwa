@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import DownloadRedirectClient from '@/components/features/download-redirect-client'
+import { createClient } from '@/lib/supabase/server'
 
 interface Props {
   params: Promise<{ token: string }>
@@ -11,7 +12,10 @@ export default async function DownloadPage({ params, searchParams }: Props) {
   const { from } = await searchParams
 
   if (from === 'success') {
-    return <DownloadRedirectClient token={token} />
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    return <DownloadRedirectClient token={token} isGuest={!user} />
   }
 
   redirect(`/api/download/${token}`)

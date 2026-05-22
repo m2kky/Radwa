@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 
 interface Props {
   token: string
+  isGuest?: boolean
 }
 
-export default function DownloadRedirectClient({ token }: Props) {
+export default function DownloadRedirectClient({ token, isGuest = false }: Props) {
   const router = useRouter()
 
   useEffect(() => {
@@ -19,21 +20,27 @@ export default function DownloadRedirectClient({ token }: Props) {
     document.body.appendChild(iframe)
 
     const timer = window.setTimeout(() => {
-      router.replace('/dashboard')
+      if (isGuest) {
+        router.replace('/')
+      } else {
+        router.replace('/dashboard')
+      }
     }, 1800)
 
     return () => {
       window.clearTimeout(timer)
       iframe.remove()
     }
-  }, [router, token])
+  }, [router, token, isGuest])
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-4">
         <h1 className="text-2xl font-bold font-serif">جاري بدء التحميل...</h1>
         <p className="text-muted-foreground">
-          سيتم تحويلك تلقائيًا إلى الداشبورد خلال ثوانٍ.
+          {isGuest 
+            ? 'سيتم تحويلك تلقائيًا إلى الصفحة الرئيسية خلال ثوانٍ.'
+            : 'سيتم تحويلك تلقائيًا إلى الداشبورد خلال ثوانٍ.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <a href={`/api/download/${token}`} className="w-full sm:w-auto">
@@ -41,9 +48,15 @@ export default function DownloadRedirectClient({ token }: Props) {
               تحميل مرة أخرى
             </Button>
           </a>
-          <Link href="/dashboard" className="w-full sm:w-auto">
-            <Button className="w-full">الذهاب للداشبورد</Button>
-          </Link>
+          {isGuest ? (
+            <Link href="/" className="w-full sm:w-auto">
+              <Button className="w-full">الذهاب للرئيسية</Button>
+            </Link>
+          ) : (
+            <Link href="/dashboard" className="w-full sm:w-auto">
+              <Button className="w-full">الذهاب للداشبورد</Button>
+            </Link>
+          )}
         </div>
       </div>
     </main>
