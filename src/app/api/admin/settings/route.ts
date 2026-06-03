@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -76,6 +77,9 @@ export async function PATCH(req: NextRequest) {
       .select('key, value, updated_at')
 
     if (error) throw error
+
+    revalidatePath('/', 'layout')
+
     return NextResponse.json({ success: true, data: data ?? [] })
   } catch (error) {
     if (error instanceof z.ZodError) {
