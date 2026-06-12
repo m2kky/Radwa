@@ -53,3 +53,24 @@ export async function uploadToR2(
 
   await r2.send(command)
 }
+
+/**
+ * Returns a signed PUT URL for direct browser uploads.
+ */
+export async function getSignedUploadUrl(
+  storagePath: string,
+  contentType?: string,
+  expiresInSeconds = 600,
+  bucketName?: string
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: bucketName || process.env.R2_BUCKET_NAME!,
+    Key: storagePath,
+    ContentType: contentType || 'application/octet-stream',
+  })
+
+  return getSignedUrl(r2, command, {
+    expiresIn: expiresInSeconds,
+    signableHeaders: new Set(['content-type']),
+  })
+}

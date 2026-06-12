@@ -27,6 +27,8 @@ interface Props {
   defaultValues?: FormProduct
 }
 
+const MAX_PRODUCT_FILE_SIZE = 200 * 1024 * 1024
+
 function normalizeFiles(files: ProductFile[] | null | undefined): ProductFile[] {
   if (!files || files.length === 0) return []
   return files.map((f) => ({
@@ -94,21 +96,47 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
     const file = event.target.files?.[0]
     if (!file) return
 
+    if (file.size > MAX_PRODUCT_FILE_SIZE) {
+      setError('أقصى حجم لملف المنتج هو 200MB')
+      event.target.value = ''
+      return
+    }
+
     setUploading(true)
     setError(null)
     try {
-      const data = new FormData()
-      data.append('file', file)
-      data.append('slug', form.slug?.trim() || form.title?.trim() || 'product')
-
-      const res = await fetch('/api/admin/products/upload', {
+      const contentType = file.type || 'application/octet-stream'
+      const signRes = await fetch('/api/admin/products/upload', {
         method: 'POST',
-        body: data,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: file.name,
+          size: file.size,
+          content_type: contentType,
+          slug: form.slug?.trim() || form.title?.trim() || 'product',
+        }),
       })
-      const body = await res.json()
-      if (!res.ok) throw new Error(body.error?.message ?? 'فشل رفع الملف')
+      const signBody = await signRes.json()
+      if (!signRes.ok) throw new Error(signBody.error?.message ?? 'فشل تجهيز رابط الرفع')
 
-      set('files', [...productFiles, body.data])
+      const uploadRes = await fetch(signBody.data.upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': signBody.data.content_type || contentType },
+        body: file,
+      })
+
+      if (!uploadRes.ok) {
+        throw new Error('فشل رفع الملف إلى التخزين')
+      }
+
+      set('files', [
+        ...productFiles,
+        {
+          name: signBody.data.name || file.name,
+          storage_path: signBody.data.storage_path,
+          size: signBody.data.size || file.size,
+        },
+      ])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل رفع الملف')
     } finally {
