@@ -15,12 +15,12 @@ import {
   LayoutDashboard,
   Package,
   ShoppingBag,
-  Tag,
-  FileText,
   ShieldCheck,
+  Tag,
   LogOut,
+  FileText,
   Clock,
-  SlidersHorizontal,
+  SlidersHorizontal
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -31,6 +31,7 @@ const navItems = [
   { href: '/admin/orders', label: 'الطلبات', icon: ShoppingBag },
   { href: '/admin/kyc', label: 'طلبات KYC', icon: ShieldCheck },
   { href: '/admin/coupons', label: 'الكوبونات', icon: Tag },
+  { href: '/admin/portfolio', label: 'بورتفوليو & دراسات الحالة', icon: FileText },
   { href: '/admin/blog', label: 'المدونة', icon: FileText },
   { href: '/admin/event-types', label: 'أنواع الجلسات', icon: Tag },
   { href: '/admin/availability', label: 'مواعيد التوفر', icon: Clock },

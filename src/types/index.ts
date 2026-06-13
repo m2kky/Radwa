@@ -166,3 +166,28 @@ export interface CheckoutPayload {
   coupon_code?: string
   customer: CheckoutCustomer
 }
+
+export type PortfolioItemType = 'project' | 'case_study'
+
+export interface PortfolioItem {
+  id: string
+  slug: string
+  title: string
+  description: string
+  item_type: PortfolioItemType
+  thumbnail_url: string | null
+  client_name: string | null
+  year: string | null
+  role: string | null
+  category: string | null
+  tags: string[] | null
+  project_url: string | null
+  content_body: string | null
+  gallery_images: string[] | null
+  video_url: string | null
+  metrics: Record<string, any> | null
+  testimonial: string | null
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}

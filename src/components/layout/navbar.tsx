@@ -26,6 +26,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
     { name: 'الرئيسية', href: '/' },
     { name: 'المتجر', href: '/shop' },
     { name: settings.booking_cta_label || 'احجزي جلسة', href: settings.booking_cta_href || '/book' },
+    { name: 'أعمالي', href: '/portfolio' },
     { name: 'المدونة', href: '/blog' },
     { name: 'من أنا', href: '/about' },
   ]
