@@ -7,11 +7,15 @@ import {
   defaultHomeTestimonials,
   defaultHomeTimeline,
   defaultSiteGeneral,
+  defaultPortfolioHero,
+  defaultPortfolioQuote,
   parseAboutMilestones,
   parseHomeTestimonials,
   parseHomeTimeline,
   parseLegalPage,
   parseSiteGeneral,
+  parsePortfolioHero,
+  parsePortfolioQuote,
   SITE_CONTENT_KEYS,
   type SiteContentKey,
 } from '@/lib/site-content'
@@ -57,5 +61,7 @@ export async function getSiteContentSettings() {
       defaultLegalPrivacy
     ),
     legalRefund: parseLegalPage(raw.legal_refund ?? defaultLegalRefund, defaultLegalRefund),
+    portfolioHero: parsePortfolioHero(raw.portfolio_hero ?? defaultPortfolioHero),
+    portfolioQuote: parsePortfolioQuote(raw.portfolio_quote ?? defaultPortfolioQuote),
   }
 }

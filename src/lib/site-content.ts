@@ -6,6 +6,8 @@ export const SITE_CONTENT_KEYS = [
   'legal_terms',
   'legal_privacy',
   'legal_refund',
+  'portfolio_hero',
+  'portfolio_quote',
 ] as const
 
 export type SiteContentKey = (typeof SITE_CONTENT_KEYS)[number]
@@ -56,6 +58,17 @@ export interface PartnerTestimonial {
   text: string
   author: string
   role: string
+}
+
+export interface PortfolioHeroSettings {
+  image_url: string
+  title: string
+  highlight_text: string
+}
+
+export interface PortfolioQuoteSettings {
+  image_url: string
+  quote_text: string
 }
 
 export interface AboutStoryMilestone {
@@ -188,6 +201,17 @@ export const defaultHomeTestimonials: PartnerTestimonial[] = [
     role: 'مديرة التسويق',
   },
 ]
+
+export const defaultPortfolioHero: PortfolioHeroSettings = {
+  image_url: '/portfolio_hero.png',
+  title: 'قصص نجاح',
+  highlight_text: 'تُصاغ بلغة الأرقام',
+}
+
+export const defaultPortfolioQuote: PortfolioQuoteSettings = {
+  image_url: '/radwa-transparent.png',
+  quote_text: 'التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.',
+}
 
 export const defaultAboutMilestones: AboutStoryMilestone[] = [
   {
@@ -437,6 +461,23 @@ export function parseLegalPage(
   }
 }
 
+export function parsePortfolioHero(value: unknown): PortfolioHeroSettings {
+  if (!isRecord(value)) return defaultPortfolioHero
+  return {
+    image_url: asString(value.image_url, defaultPortfolioHero.image_url),
+    title: asString(value.title, defaultPortfolioHero.title),
+    highlight_text: asString(value.highlight_text, defaultPortfolioHero.highlight_text),
+  }
+}
+
+export function parsePortfolioQuote(value: unknown): PortfolioQuoteSettings {
+  if (!isRecord(value)) return defaultPortfolioQuote
+  return {
+    image_url: asString(value.image_url, defaultPortfolioQuote.image_url),
+    quote_text: asString(value.quote_text, defaultPortfolioQuote.quote_text),
+  }
+}
+
 export function sanitizeSettingValue(key: SiteContentKey, value: unknown): unknown {
   switch (key) {
     case 'site_general':
@@ -453,6 +494,10 @@ export function sanitizeSettingValue(key: SiteContentKey, value: unknown): unkno
       return parseLegalPage(value, defaultLegalPrivacy)
     case 'legal_refund':
       return parseLegalPage(value, defaultLegalRefund)
+    case 'portfolio_hero':
+      return parsePortfolioHero(value)
+    case 'portfolio_quote':
+      return parsePortfolioQuote(value)
     default:
       return value
   }

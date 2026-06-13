@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getSiteContentSettings } from '@/lib/site-content-server'
 import PortfolioGrid from '@/components/portfolio/portfolio-grid'
 import { Target, Grid, CheckSquare, BarChart3 } from 'lucide-react'
 
@@ -23,6 +24,11 @@ export default async function PortfolioPage() {
   const caseStudies = items?.filter(i => i.item_type === 'case_study') || []
   const projects = items?.filter(i => i.item_type === 'project') || []
 
+  // Fetch dynamic sections for Hero and Quote
+  const settings = await getSiteContentSettings()
+  const hero = settings.portfolioHero
+  const quote = settings.portfolioQuote
+
   return (
     <main className="min-h-screen bg-cold-black text-ice-white pb-24 overflow-x-hidden">
       {/* Full Screen Hero Section */}
@@ -30,8 +36,8 @@ export default async function PortfolioPage() {
         {/* Background Image */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/portfolio_hero.png"
-          alt="رضوى محمد - معرض الأعمال"
+          src={hero.image_url}
+          alt={hero.title}
           className="absolute inset-0 w-full h-full object-cover object-top opacity-80"
         />
 
@@ -42,7 +48,7 @@ export default async function PortfolioPage() {
         {/* Hero Content Over Image */}
         <div className="relative z-10 px-4 sm:px-6 max-w-5xl mx-auto text-center translate-y-12 sm:translate-y-24">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-ice-white drop-shadow-2xl">
-            قصص نجاح <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">تُصاغ بلغة الأرقام</span>
+            {hero.title} <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">{hero.highlight_text}</span>
           </h1>
         </div>
       </div>
@@ -85,35 +91,41 @@ export default async function PortfolioPage() {
         </section>
       </div>
 
-      {/* Quote Section (Transparent Image Approach - Light Theme - Full Screen) */}
-      <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-white mt-32">
-        {/* Abstract Light Background Elements */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] mix-blend-overlay z-0" />
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-cyan-400/20 blur-[100px] rounded-full z-0 pointer-events-none" />
-        
-        {/* Transparent Person Image */}
-        <div className="hidden sm:block absolute bottom-0 left-0 md:left-10 lg:left-32 w-[50%] md:w-[40%] h-[85%] md:h-[95%] z-10 pointer-events-none">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src="/radwa-transparent.png" 
-            alt="رضوى محمد" 
-            className="w-full h-full object-contain object-bottom drop-shadow-2xl"
-          />
-        </div>
-        
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-center sm:justify-end py-24">
-          <div className="max-w-lg md:max-w-2xl relative">
-            {/* Huge Quote Icon */}
-            <div className="absolute -top-12 -right-4 md:-right-10 text-[8rem] md:text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-sm select-none opacity-90">
-              &rdquo;
+      {/* Quote Section (Emerald Aura Gradient, Flexbox Layout) */}
+      <section className="relative w-full min-h-screen flex items-center bg-gradient-to-br from-cold-black via-emerald-950/30 to-cold-black mt-24 py-16 md:py-24 overflow-hidden">
+        {/* Abstract Emerald Glow */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full z-0 pointer-events-none" />
+
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12">
+            
+            {/* Person Image (Right side on Desktop due to RTL, Top on Mobile) */}
+            <div className="w-full md:w-1/2 flex justify-center md:justify-end translate-y-12 sm:translate-y-16 md:translate-y-24">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={quote.image_url} 
+                alt="رضوى محمد" 
+                className="h-[75vh] md:h-auto w-auto md:w-full max-w-none md:max-w-lg lg:max-w-xl object-contain scale-110 md:scale-105 lg:scale-110 origin-bottom"
+              />
             </div>
             
-            {/* Glassmorphism Card (Light) */}
-            <div className="relative z-10 bg-white/70 backdrop-blur-2xl border border-white/50 rounded-3xl p-8 md:p-12 shadow-[0_20px_60px_rgb(0,0,0,0.08)]">
-              <h3 className="text-xl md:text-3xl lg:text-4xl font-serif leading-loose md:leading-loose text-cold-black font-medium">
-                التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.
-              </h3>
+            {/* Quote Card (Left side on Desktop due to RTL, Below Image on Mobile) */}
+            <div className="w-full md:w-1/2 flex justify-center md:justify-start -mt-24 sm:-mt-32 md:mt-0">
+              <div className="relative w-full max-w-lg lg:max-w-xl z-20 md:-translate-x-8">
+                {/* Huge Quote Icon */}
+                <div className="absolute -top-10 -right-2 md:-top-16 md:-right-8 text-[8rem] md:text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-sm select-none opacity-90">
+                  &rdquo;
+                </div>
+                
+                {/* Glassmorphism Dark Card - Ultra Frosted */}
+                <div className="relative z-10 bg-white/5 backdrop-blur-[100px] border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl">
+                  <h3 className="text-xl md:text-3xl lg:text-4xl font-serif leading-relaxed md:leading-[1.8] text-ice-white font-medium">
+                    {quote.quote_text}
+                  </h3>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
       </section>

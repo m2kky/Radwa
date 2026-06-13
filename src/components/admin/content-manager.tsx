@@ -9,6 +9,8 @@ import type {
   PartnerTestimonial,
   SiteGeneralSettings,
   TimelineAccent,
+  PortfolioHeroSettings,
+  PortfolioQuoteSettings,
 } from '@/lib/site-content'
 
 interface ContentSettings {
@@ -19,6 +21,8 @@ interface ContentSettings {
   legalTerms: LegalPageContent
   legalPrivacy: LegalPageContent
   legalRefund: LegalPageContent
+  portfolioHero: PortfolioHeroSettings
+  portfolioQuote: PortfolioQuoteSettings
 }
 
 const inputClass =
@@ -44,6 +48,8 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
   const [legalTerms, setLegalTerms] = useState(initial.legalTerms)
   const [legalPrivacy, setLegalPrivacy] = useState(initial.legalPrivacy)
   const [legalRefund, setLegalRefund] = useState(initial.legalRefund)
+  const [portfolioHero, setPortfolioHero] = useState(initial.portfolioHero)
+  const [portfolioQuote, setPortfolioQuote] = useState(initial.portfolioQuote)
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -169,6 +175,8 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
             legal_terms: legalTerms,
             legal_privacy: legalPrivacy,
             legal_refund: legalRefund,
+            portfolio_hero: portfolioHero,
+            portfolio_quote: portfolioQuote,
           },
         }),
       })
@@ -661,6 +669,58 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
         {renderLegalEditor('شروط الخدمة', legalTerms, setLegalTerms)}
         {renderLegalEditor('سياسة الخصوصية', legalPrivacy, setLegalPrivacy)}
         {renderLegalEditor('سياسة الاسترجاع', legalRefund, setLegalRefund)}
+      </section>
+
+      <section className={cardClass}>
+        <h2 className="text-lg font-semibold text-foreground">Portfolio Hero (معرض الأعمال)</h2>
+        <div>
+          <label className={labelClass}>الصورة الرئيسية (رابط)</label>
+          <input
+            className={inputClass}
+            value={portfolioHero.image_url}
+            onChange={(e) => setPortfolioHero(p => ({ ...p, image_url: e.target.value }))}
+            dir="ltr"
+          />
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>العنوان الرئيسي</label>
+            <input
+              className={inputClass}
+              value={portfolioHero.title}
+              onChange={(e) => setPortfolioHero(p => ({ ...p, title: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>الكلمات المميزة (Highlight)</label>
+            <input
+              className={inputClass}
+              value={portfolioHero.highlight_text}
+              onChange={(e) => setPortfolioHero(p => ({ ...p, highlight_text: e.target.value }))}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className={cardClass}>
+        <h2 className="text-lg font-semibold text-foreground">Portfolio Quote (قسم الاقتباس)</h2>
+        <div>
+          <label className={labelClass}>صورة الاقتباس (رابط)</label>
+          <input
+            className={inputClass}
+            value={portfolioQuote.image_url}
+            onChange={(e) => setPortfolioQuote(p => ({ ...p, image_url: e.target.value }))}
+            dir="ltr"
+          />
+        </div>
+        <div>
+          <label className={labelClass}>نص الاقتباس</label>
+          <textarea
+            className={textareaClass}
+            value={portfolioQuote.quote_text}
+            onChange={(e) => setPortfolioQuote(p => ({ ...p, quote_text: e.target.value }))}
+          />
+        </div>
       </section>
 
       <div className="sticky bottom-4 z-20">

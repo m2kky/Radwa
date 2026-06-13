@@ -7,7 +7,7 @@ export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
   if (!item) return notFound()
 
   return (
-    <main className="min-h-screen bg-cold-black text-ice-white pt-28 pb-24">
+    <main className="min-h-screen bg-cold-black text-ice-white pb-24">
       {/* Top Banner with Background */}
       <div className="relative w-full h-[50vh] min-h-[400px] border-b border-white/10">
         {item.thumbnail_url ? (
@@ -80,7 +80,6 @@ export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
 
           {item.tags && item.tags.length > 0 && (
             <div>
-              <h4 className="text-ice-white/50 text-sm font-medium mb-3">الوسوم</h4>
               <div className="flex flex-wrap gap-2">
                 {item.tags.map(tag => (
                   <span key={tag} className="text-xs text-ice-white/70 border border-white/10 bg-white/5 px-2.5 py-1.5 rounded-md">

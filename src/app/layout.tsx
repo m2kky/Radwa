@@ -40,8 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} dark`}>
-      <body>
+    <html lang="ar" dir="rtl" className={`${tajawal.variable} dark`} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         {gaId ? (
           <>
             <Script
