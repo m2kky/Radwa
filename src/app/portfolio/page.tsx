@@ -24,7 +24,7 @@ export default async function PortfolioPage() {
   const projects = items?.filter(i => i.item_type === 'project') || []
 
   return (
-    <main className="min-h-screen bg-cold-black text-ice-white pb-24">
+    <main className="min-h-screen bg-cold-black text-ice-white pb-24 overflow-x-hidden">
       {/* Full Screen Hero Section */}
       <div className="relative w-full h-[90vh] sm:h-[120vh] flex items-center justify-center overflow-hidden mb-16 sm:mb-24">
         {/* Background Image */}
@@ -84,29 +84,32 @@ export default async function PortfolioPage() {
           <PortfolioGrid items={caseStudies} />
         </section>
 
-        {/* Quote Section (Full Width Breakout) */}
-        <section className="w-[100vw] relative left-1/2 -translate-x-1/2 min-h-[60vh] md:min-h-[80vh] flex items-center overflow-hidden my-20">
-          <div className="absolute inset-0 bg-cold-black/40 z-10" />
-          {/* هنا يمكنك تغيير الصورة /radwa2.png بالصورة المطلوبة */}
-          <div className="absolute inset-0 bg-[url('/radwa2.png')] bg-cover bg-center" />
-          
-          <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-start">
-            <div className="max-w-lg md:max-w-2xl relative mt-16 md:mt-0">
-              {/* Huge Quote Icon */}
-              <div className="absolute -top-16 -right-6 md:-right-12 text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-xl select-none">
-                &rdquo;
-              </div>
-              
-              {/* Glassmorphism Card */}
-              <div className="relative z-10 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 md:p-14 shadow-2xl">
-                <h3 className="text-2xl md:text-4xl font-serif leading-loose text-white">
-                  التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.
-                </h3>
-              </div>
+      </div>
+
+      {/* Quote Section (Naturally Full Width) */}
+      <section className="relative w-full min-h-[60vh] md:min-h-[80vh] flex items-center overflow-hidden my-32">
+        <div className="absolute inset-0 bg-cold-black/40 z-10" />
+        {/* هنا يمكنك تغيير الصورة /radwa2.png بالصورة المطلوبة */}
+        <div className="absolute inset-0 bg-[url('/radwa2.png')] bg-cover bg-center" />
+        
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-start">
+          <div className="max-w-lg md:max-w-2xl relative mt-16 md:mt-0">
+            {/* Huge Quote Icon */}
+            <div className="absolute -top-16 -right-6 md:-right-12 text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-xl select-none">
+              &rdquo;
+            </div>
+            
+            {/* Glassmorphism Card */}
+            <div className="relative z-10 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 md:p-14 shadow-2xl">
+              <h3 className="text-2xl md:text-4xl font-serif leading-loose text-white">
+                التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.
+              </h3>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 space-y-32">
         {/* Projects Grid Section */}
         <section>
           <div className="text-center mb-12">
