@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
   title: 'أعمالي ودراسات الحالة | رضوى محمد',

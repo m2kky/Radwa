@@ -185,7 +185,7 @@ export interface PortfolioItem {
   content_body: string | null
   gallery_images: string[] | null
   video_url: string | null
-  metrics: Record<string, any> | null
+  metrics: Record<string, unknown> | null
   testimonial: string | null
   is_published: boolean
   created_at: string

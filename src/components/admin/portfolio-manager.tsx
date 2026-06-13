@@ -20,7 +20,7 @@ export default function PortfolioManager({ initialItems }: { initialItems: Portf
       if (!res.ok) throw new Error('Failed to delete')
       setItems(prev => prev.filter(i => i.id !== id))
       router.refresh()
-    } catch (error) {
+    } catch {
       alert('حدث خطأ أثناء الحذف')
     } finally {
       setDeletingId(null)
@@ -37,7 +37,7 @@ export default function PortfolioManager({ initialItems }: { initialItems: Portf
       if (!res.ok) throw new Error('Failed to update')
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_published: !i.is_published } : i))
       router.refresh()
-    } catch (error) {
+    } catch {
       alert('حدث خطأ أثناء التحديث')
     }
   }
@@ -76,6 +76,7 @@ export default function PortfolioManager({ initialItems }: { initialItems: Portf
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     {item.thumbnail_url && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img src={item.thumbnail_url} alt={item.title} className="w-10 h-10 rounded object-cover" />
                     )}
                     <div>

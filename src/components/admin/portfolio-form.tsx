@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ImagePlus, Loader2 } from 'lucide-react'
 import RichTextEditor from '@/components/admin/rich-text-editor'
-import type { PortfolioItem, PortfolioItemType } from '@/types'
+import type { PortfolioItem } from '@/types'
 
 interface Props {
   id?: string
@@ -28,7 +28,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
   // To handle tags as a comma-separated string in the input
   const [tagsInput, setTagsInput] = useState((defaultValues.tags || []).join(', '))
 
-  const set = (key: keyof PortfolioItem, value: any) =>
+  const set = (key: keyof PortfolioItem, value: unknown) =>
     setForm(prev => ({ ...prev, [key]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
       if (!res.ok) throw new Error(data.error?.message ?? data.error ?? 'حدث خطأ')
       router.push('/admin/portfolio')
       router.refresh()
-    } catch (err: any) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ')
     } finally {
       setLoading(false)
