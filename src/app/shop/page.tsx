@@ -53,7 +53,7 @@ export default async function ShopPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pt-28">
       <ShopCatalog products={all} />
       <FAQSection
         title="أسئلة شائعة قبل الشراء"

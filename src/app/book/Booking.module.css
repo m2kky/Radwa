@@ -1,6 +1,6 @@
 .pageWrap {
   min-height: calc(100vh - 88px);
-  padding: 2rem 1rem 4rem;
+  padding: 7rem 1rem 4rem;
   background:
     radial-gradient(1200px 600px at 10% -5%, rgba(250, 204, 21, 0.14), transparent 55%),
     radial-gradient(900px 500px at 100% 0%, rgba(34, 211, 238, 0.11), transparent 52%),
@@ -750,7 +750,7 @@
 
 @media (max-width: 820px) {
   .pageWrap {
-    padding: 1.2rem 0.8rem 3rem;
+    padding: 6rem 0.8rem 3rem;
   }
 
   .listingCard {

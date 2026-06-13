@@ -19,7 +19,7 @@ export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 to-cold-black" />
         )}
         
-        <div className="absolute inset-0 flex flex-col justify-end pb-12">
+        <div className="absolute inset-0 flex flex-col justify-end pb-12 pt-28">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 w-full">
             <Link href="/portfolio" className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-400 font-medium mb-8 transition-colors">
               <ArrowLeft size={18} />

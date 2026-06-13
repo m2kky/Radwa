@@ -100,7 +100,7 @@ export default async function ProductPage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pt-28">
       <div className="container mx-auto px-4 py-12 md:py-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
 

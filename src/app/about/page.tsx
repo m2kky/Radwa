@@ -21,7 +21,7 @@ export default async function AboutPage() {
   const contentSettings = await getSiteContentSettings()
 
   return (
-    <main className="min-h-screen bg-cold-black">
+    <main className="min-h-screen bg-cold-black pt-28">
       <AboutHero />
 
       <div className="relative z-20 bg-cold-black">
