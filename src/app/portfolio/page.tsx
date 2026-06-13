@@ -84,20 +84,25 @@ export default async function PortfolioPage() {
           <PortfolioGrid items={caseStudies} />
         </section>
 
-        {/* Quote Section */}
-        <section className="relative rounded-3xl overflow-hidden border border-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-emerald-900/10" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-          <div className="relative z-10 px-8 py-20 md:py-24 flex flex-col md:flex-row items-center justify-center gap-12 max-w-5xl mx-auto">
-            <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-cyan-500/20 shrink-0 shadow-2xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/radwa1.png" alt="رضوى محمد" className="w-full h-full object-cover" />
-            </div>
-            <div className="text-center md:text-right">
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif italic text-ice-white/90 leading-relaxed">
-                "التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك."
-              </h3>
-              <p className="mt-8 text-cyan-300 font-semibold text-xl">- رضوى محمد</p>
+        {/* Quote Section (Full Width Breakout) */}
+        <section className="w-[100vw] relative left-1/2 -translate-x-1/2 min-h-[60vh] md:min-h-[80vh] flex items-center overflow-hidden my-20">
+          <div className="absolute inset-0 bg-cold-black/40 z-10" />
+          {/* هنا يمكنك تغيير الصورة /radwa2.png بالصورة المطلوبة */}
+          <div className="absolute inset-0 bg-[url('/radwa2.png')] bg-cover bg-center" />
+          
+          <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-start">
+            <div className="max-w-lg md:max-w-2xl relative mt-16 md:mt-0">
+              {/* Huge Quote Icon */}
+              <div className="absolute -top-16 -right-6 md:-right-12 text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-xl select-none">
+                &rdquo;
+              </div>
+              
+              {/* Glassmorphism Card */}
+              <div className="relative z-10 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 md:p-14 shadow-2xl">
+                <h3 className="text-2xl md:text-4xl font-serif leading-loose text-white">
+                  التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.
+                </h3>
+              </div>
             </div>
           </div>
         </section>
