@@ -83,11 +83,10 @@ export default async function PortfolioPage() {
           </div>
           <PortfolioGrid items={caseStudies} />
         </section>
-
       </div>
 
       {/* Quote Section (Transparent Image Approach - Light Theme - Full Screen) */}
-      <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-ice-white">
+      <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-ice-white mt-32">
         {/* Abstract Light Background Elements */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] mix-blend-overlay z-0" />
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-cyan-400/20 blur-[100px] rounded-full z-0 pointer-events-none" />
@@ -119,7 +118,7 @@ export default async function PortfolioPage() {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 space-y-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-32 space-y-32">
         {/* Projects Grid Section */}
         <section>
           <div className="text-center mb-12">
