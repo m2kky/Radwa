@@ -86,22 +86,32 @@ export default async function PortfolioPage() {
 
       </div>
 
-      {/* Quote Section (Naturally Full Width) */}
-      <section className="relative w-full min-h-[60vh] md:min-h-[80vh] flex items-center overflow-hidden my-32">
-        <div className="absolute inset-0 bg-cold-black/40 z-10" />
-        {/* هنا يمكنك تغيير الصورة /radwa2.png بالصورة المطلوبة */}
-        <div className="absolute inset-0 bg-[url('/radwa2.png')] bg-cover bg-center" />
+      {/* Quote Section (Transparent Image Approach) */}
+      <section className="relative w-full min-h-[50vh] md:min-h-[70vh] flex items-center overflow-hidden my-32 bg-gradient-to-l from-cold-black via-cyan-950/20 to-cold-black border-y border-white/5">
+        {/* Abstract Background Noise & Glow */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay z-0" />
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full z-0 pointer-events-none" />
         
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-start">
-          <div className="max-w-lg md:max-w-2xl relative mt-16 md:mt-0">
+        {/* Transparent Person Image (Hidden on small mobile, visible on tablet/desktop) */}
+        <div className="hidden sm:block absolute bottom-0 left-0 md:left-10 lg:left-32 w-[50%] md:w-[40%] h-[90%] md:h-[100%] z-10 pointer-events-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src="/radwa-transparent.png" 
+            alt="رضوى محمد" 
+            className="w-full h-full object-contain object-bottom drop-shadow-2xl opacity-90"
+          />
+        </div>
+        
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-center sm:justify-end">
+          <div className="max-w-lg md:max-w-2xl relative">
             {/* Huge Quote Icon */}
-            <div className="absolute -top-16 -right-6 md:-right-12 text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-xl select-none">
+            <div className="absolute -top-12 -right-4 md:-right-10 text-[8rem] md:text-[10rem] text-emerald-500 font-serif leading-none z-0 drop-shadow-xl select-none opacity-80">
               &rdquo;
             </div>
             
             {/* Glassmorphism Card */}
-            <div className="relative z-10 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 md:p-14 shadow-2xl">
-              <h3 className="text-2xl md:text-4xl font-serif leading-loose text-white">
+            <div className="relative z-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl">
+              <h3 className="text-xl md:text-3xl lg:text-4xl font-serif leading-loose md:leading-loose text-white">
                 التسويق ليس مجرد إعلانات، بل هو فن تحويل الأرقام إلى قصص نجاح مستدامة تبني علاقة حقيقية مع جمهورك.
               </h3>
             </div>
