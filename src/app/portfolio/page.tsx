@@ -86,7 +86,7 @@ export default async function PortfolioPage() {
       </div>
 
       {/* Quote Section (Transparent Image Approach - Light Theme - Full Screen) */}
-      <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-ice-white mt-32">
+      <section className="relative w-full min-h-screen flex items-center overflow-hidden bg-white mt-32">
         {/* Abstract Light Background Elements */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] mix-blend-overlay z-0" />
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-cyan-400/20 blur-[100px] rounded-full z-0 pointer-events-none" />
