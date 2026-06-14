@@ -92,6 +92,18 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
     set('files', next)
   }
 
+  const persistFilesForExistingProduct = async (files: ProductFile[]) => {
+    if (!id) return
+
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error?.message ?? 'فشل حفظ ملف المنتج')
+  }
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -129,14 +141,17 @@ export default function ProductForm({ id, defaultValues = {} }: Props) {
         throw new Error('فشل رفع الملف إلى التخزين')
       }
 
-      set('files', [
+      const nextFiles = [
         ...productFiles,
         {
           name: signBody.data.name || file.name,
           storage_path: signBody.data.storage_path,
           size: signBody.data.size || file.size,
         },
-      ])
+      ]
+
+      await persistFilesForExistingProduct(nextFiles)
+      set('files', nextFiles)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل رفع الملف')
     } finally {
