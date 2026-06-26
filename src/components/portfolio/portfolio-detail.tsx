@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink, Tag } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Quote, Tag } from 'lucide-react'
 import type { PortfolioItem } from '@/types'
 
 export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
@@ -107,6 +107,20 @@ export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
         <div className="md:col-span-3 prose prose-invert prose-lg prose-cyan max-w-none">
           {/* Custom Rich Text Rendering */}
           <div className="article-content" dangerouslySetInnerHTML={{ __html: item.content_body || '' }} />
+
+          {item.item_type === 'case_study' && item.testimonial?.trim() && (
+            <blockquote className="not-prose mt-12 border-s-2 border-cyan-glow bg-white/[0.04] px-6 py-7 md:px-8">
+              <Quote className="mb-4 text-cyan-glow" size={30} aria-hidden="true" />
+              <p className="whitespace-pre-line text-lg leading-8 text-ice-white/90">
+                {item.testimonial}
+              </p>
+              {item.client_name && (
+                <footer className="mt-5 text-sm font-semibold text-cyan-300">
+                  {item.client_name}
+                </footer>
+              )}
+            </blockquote>
+          )}
           
           {/* Custom Styles for the rich text editor output */}
           <style dangerouslySetInnerHTML={{__html: `
