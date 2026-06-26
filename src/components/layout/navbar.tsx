@@ -24,6 +24,8 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
 
     const NAV_LINKS = [
       { label: 'الرئيسية', href: '/' },
+      { label: 'الخدمات', href: '/services' },
+      { label: 'Guides & Templates', href: '/guides' },
       { label: 'المتجر', href: '/shop' },
       { label: 'أعمالي', href: '/portfolio' },
       { label: 'المدونة', href: '/blog' },
@@ -183,6 +185,8 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
                     </button>
 
                     <Link href="/about" className={styles.link}>من أنا</Link>
+                    <Link href="/services" className={styles.link}>الخدمات</Link>
+                    <Link href="/guides" className={styles.link}>Guides</Link>
                     <Link href="/portfolio" className={styles.link}>أعمالي</Link>
                     <Link href="/blog" className={styles.link}>المدونة</Link>
                 </div>

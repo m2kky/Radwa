@@ -75,7 +75,7 @@
   letter-spacing: 0.1em;
 }
 
-.right { justify-self: end; display: flex; gap: 2rem; align-items: center; }
+.right { justify-self: end; display: flex; gap: clamp(0.75rem, 1.4vw, 2rem); align-items: center; }
 .link {
   font-family: var(--font-tajawal, sans-serif);
   font-size: 0.75rem;

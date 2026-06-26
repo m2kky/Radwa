@@ -25,7 +25,10 @@ export default function Footer({ settings }: { settings: SiteGeneralSettings }) 
         <div>
           <h3 className="font-semibold mb-3 text-sm">روابط</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><Link href="/services" className="hover:text-primary">الخدمات</Link></li>
+            <li><Link href="/guides" className="hover:text-primary">Guides & Templates</Link></li>
             <li><Link href="/shop" className="hover:text-primary">المتجر</Link></li>
+            <li><Link href="/portfolio" className="hover:text-primary">أعمالي</Link></li>
             <li><Link href="/blog" className="hover:text-primary">المدونة</Link></li>
             <li><Link href="/about" className="hover:text-primary">من أنا</Link></li>
           </ul>
