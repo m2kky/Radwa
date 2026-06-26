@@ -168,6 +168,9 @@ export interface CheckoutPayload {
 }
 
 export type PortfolioItemType = 'project' | 'case_study'
+export type GuideStatus = 'draft' | 'published' | 'archived'
+export type ServiceStatus = 'draft' | 'published' | 'archived'
+export type ServiceCtaType = 'book' | 'link' | 'form'
 
 export interface PortfolioItem {
   id: string
@@ -182,6 +185,7 @@ export interface PortfolioItem {
   category: string | null
   tags: string[] | null
   project_url: string | null
+  drive_url: string | null
   content_body: string | null
   gallery_images: string[] | null
   video_url: string | null
@@ -190,4 +194,58 @@ export interface PortfolioItem {
   is_published: boolean
   created_at: string
   updated_at: string
+}
+
+export interface Guide {
+  id: string
+  slug: string
+  title: string
+  excerpt: string | null
+  content_body: string | null
+  thumbnail_url: string | null
+  file_storage_path: string | null
+  file_name: string | null
+  file_size: number
+  category: string | null
+  tags: string[] | null
+  status: GuideStatus
+  is_featured: boolean
+  download_count: number
+  meta_title: string | null
+  meta_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Service {
+  id: string
+  slug: string
+  title: string
+  excerpt: string | null
+  content_body: string | null
+  thumbnail_url: string | null
+  status: ServiceStatus
+  sort_order: number
+  cta_type: ServiceCtaType
+  cta_label: string
+  cta_url: string | null
+  meta_title: string | null
+  meta_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ServiceLead {
+  id: string
+  service_id: string | null
+  service_title: string | null
+  name: string
+  email: string
+  phone: string
+  company: string | null
+  budget: string | null
+  timeline: string | null
+  message: string
+  source_path: string | null
+  created_at: string
 }

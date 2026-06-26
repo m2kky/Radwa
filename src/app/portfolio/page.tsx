@@ -79,15 +79,13 @@ export default async function PortfolioPage() {
           </div>
         </section>
 
-        {/* Case Studies Section */}
+        {/* Projects Grid Section */}
         <section>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">دراسات الحالة</h2>
-              <p className="text-ice-white/60 text-lg">تحليل متعمق للتحديات، الحلول، والأرقام التي حققناها.</p>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">المشاريع البارزة</h2>
+            <p className="text-ice-white/60 text-lg">مجموعة من الأعمال والمشاريع التي نفذتها مؤخراً.</p>
           </div>
-          <PortfolioGrid items={caseStudies} />
+          <PortfolioGrid items={projects} />
         </section>
       </div>
 
@@ -131,13 +129,15 @@ export default async function PortfolioPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 mt-32 space-y-32">
-        {/* Projects Grid Section */}
+        {/* Case Studies Section */}
         <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">المشاريع البارزة</h2>
-            <p className="text-ice-white/60 text-lg">مجموعة من الأعمال والمشاريع التي نفذتها مؤخراً.</p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">دراسات الحالة</h2>
+              <p className="text-ice-white/60 text-lg">تحليل متعمق للتحديات، الحلول، والأرقام التي حققناها.</p>
+            </div>
           </div>
-          <PortfolioGrid items={projects} />
+          <PortfolioGrid items={caseStudies} />
         </section>
 
       </div>

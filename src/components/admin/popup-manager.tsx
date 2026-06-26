@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import MediaUploadField from '@/components/admin/media-upload-field'
 import {
   normalizePopupActions,
   normalizePopupVariant,
@@ -534,12 +535,12 @@ export default function PopupManager({
 
           <div>
             <label className={labelClass}>رابط الصورة (اختياري)</label>
-            <input
-              className={inputClass}
+            <MediaUploadField
               value={form.image_url}
-              onChange={(e) => set('image_url', e.target.value)}
-              placeholder="https://... أو /image.jpg"
-              dir="ltr"
+              onChange={(value) => set('image_url', value)}
+              folder="site/popup"
+              placeholder="https://... أو /api/media?path=..."
+              inputClassName={inputClass}
             />
           </div>
 

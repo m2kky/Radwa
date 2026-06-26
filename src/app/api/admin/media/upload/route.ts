@@ -6,11 +6,11 @@
  *   - file: File (required)
  *   - folder: string (optional, e.g. products/my-slug or blog/my-slug)
  *
- * Uploads to Supabase Storage bucket (default: digital-products)
+ * Uploads to Cloudflare R2
  * and returns a media URL served through /api/media.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { uploadToR2 } from '@/lib/r2'
 
 function slugify(value: string): string {
   return value
@@ -30,8 +30,28 @@ function sanitizeFilename(name: string): string {
     .replace(/^-|-$/g, '') || 'file.bin'
 }
 
+function getR2BucketName(): string | null {
+  return process.env.R2_BUCKET_MEDIA || process.env.R2_BUCKET_NAME || null
+}
+
+function canUseR2(): boolean {
+  return Boolean(
+    process.env.R2_ACCOUNT_ID &&
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY &&
+      getR2BucketName()
+  )
+}
+
 export async function POST(req: NextRequest) {
   try {
+    if (!canUseR2()) {
+      return NextResponse.json(
+        { error: { code: 'R2_NOT_CONFIGURED', message: 'R2 media storage is not configured' } },
+        { status: 500 }
+      )
+    }
+
     const formData = await req.formData()
     const maybeFile = formData.get('file')
     const folderInput = String(formData.get('folder') ?? '')
@@ -61,17 +81,11 @@ export async function POST(req: NextRequest) {
     const safeFileName = sanitizeFilename(maybeFile.name)
     const objectPath = `${folder}/${Date.now()}-${safeFileName}`
     const bytes = Buffer.from(await maybeFile.arrayBuffer())
-    const bucket = process.env.SUPABASE_MEDIA_BUCKET || 'digital-products'
+    const bucket = getR2BucketName()!
 
-    const admin = createAdminClient()
-    const { error } = await admin.storage.from(bucket).upload(objectPath, bytes, {
-      contentType: maybeFile.type || 'application/octet-stream',
-      upsert: true,
-    })
+    await uploadToR2(objectPath, bytes, maybeFile.type || undefined, bucket)
 
-    if (error) throw error
-
-    const storageRef = `sb://${bucket}/${objectPath}`
+    const storageRef = `r2://${bucket}/${objectPath}`
     const mediaUrl = `/api/media?path=${encodeURIComponent(storageRef)}`
 
     return NextResponse.json({

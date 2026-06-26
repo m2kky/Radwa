@@ -2,6 +2,7 @@
 
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { Plus, CheckCircle, Trash2 } from 'lucide-react'
+import MediaUploadField from '@/components/admin/media-upload-field'
 import type {
   AboutStoryMilestone,
   HomeTimelineContent,
@@ -675,11 +676,11 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
         <h2 className="text-lg font-semibold text-foreground">Portfolio Hero (معرض الأعمال)</h2>
         <div>
           <label className={labelClass}>الصورة الرئيسية (رابط)</label>
-          <input
-            className={inputClass}
+          <MediaUploadField
             value={portfolioHero.image_url}
-            onChange={(e) => setPortfolioHero(p => ({ ...p, image_url: e.target.value }))}
-            dir="ltr"
+            onChange={(value) => setPortfolioHero(p => ({ ...p, image_url: value }))}
+            folder="site/portfolio-hero"
+            inputClassName={inputClass}
           />
         </div>
         <div className="grid md:grid-cols-2 gap-4">
@@ -706,11 +707,11 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
         <h2 className="text-lg font-semibold text-foreground">Portfolio Quote (قسم الاقتباس)</h2>
         <div>
           <label className={labelClass}>صورة الاقتباس (رابط)</label>
-          <input
-            className={inputClass}
+          <MediaUploadField
             value={portfolioQuote.image_url}
-            onChange={(e) => setPortfolioQuote(p => ({ ...p, image_url: e.target.value }))}
-            dir="ltr"
+            onChange={(value) => setPortfolioQuote(p => ({ ...p, image_url: value }))}
+            folder="site/portfolio-quote"
+            inputClassName={inputClass}
           />
         </div>
         <div>

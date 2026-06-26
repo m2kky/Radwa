@@ -13,9 +13,13 @@ declare module 'lucide-react' {
   export const ShoppingBag: LucideIcon
   export const Package: LucideIcon
   export const Clock: LucideIcon
+  export const Calendar: LucideIcon
   export const Plus: LucideIcon
+  export const Upload: LucideIcon
+  export const Download: LucideIcon
   export const Pencil: LucideIcon
   export const ArrowLeft: LucideIcon
+  export const ExternalLink: LucideIcon
   export const Sparkles: LucideIcon
   export const CheckCircle2: LucideIcon
   export const ArrowDown: LucideIcon
@@ -26,7 +30,10 @@ declare module 'lucide-react' {
   export const LayoutDashboard: LucideIcon
   export const Tag: LucideIcon
   export const FileText: LucideIcon
+  export const BookOpen: LucideIcon
+  export const BriefcaseBusiness: LucideIcon
   export const LogOut: LucideIcon
+  export const Mail: LucideIcon
   export const CreditCard: LucideIcon
   export const Smartphone: LucideIcon
   export const ArrowUpRight: LucideIcon

@@ -20,7 +20,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
   const [form, setForm] = useState<Partial<PortfolioItem>>({
     slug: '', title: '', description: '', item_type: 'project',
     thumbnail_url: '', category: '', tags: [], client_name: '',
-    year: '', role: '', project_url: '', content_body: '', 
+    year: '', role: '', project_url: '', drive_url: '', content_body: '',
     testimonial: '', is_published: false,
     ...defaultValues,
   })
@@ -43,6 +43,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
         ...form,
         tags: tagsInput.split(',').map(t => t.trim()).filter(Boolean),
         thumbnail_url: form.thumbnail_url || null,
+        drive_url: form.drive_url || null,
         metrics: form.metrics ? form.metrics : null,
       }
 
@@ -147,6 +148,17 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
           <label className={labelClass}>رابط المشروع المباشر</label>
           <input value={form.project_url || ''} onChange={e => set('project_url', e.target.value)} className={inputClass} placeholder="https://..." dir="ltr" />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>رابط المشروع الكامل على Drive</label>
+        <input
+          value={form.drive_url || ''}
+          onChange={e => set('drive_url', e.target.value)}
+          className={inputClass}
+          placeholder="https://drive.google.com/..."
+          dir="ltr"
+        />
       </div>
 
       <div>

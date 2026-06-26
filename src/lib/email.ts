@@ -344,3 +344,55 @@ export async function sendKycAdminNotificationEmail(params: {
     ),
   })
 }
+
+export async function sendServiceLeadAdminNotificationEmail(params: {
+  serviceTitle: string
+  name: string
+  email: string
+  phone: string
+  company?: string | null
+  budget?: string | null
+  timeline?: string | null
+  message: string
+}) {
+  if (!NOTIFY_EMAIL) return
+
+  await sendEmail({
+    to: NOTIFY_EMAIL,
+    subject: `طلب خدمة جديد: ${params.serviceTitle}`,
+    html: shell(
+      'إشعار طلب خدمة جديد',
+      `
+        <p>تم إرسال طلب جديد من صفحة الخدمات.</p>
+        <p><strong>الخدمة:</strong> ${params.serviceTitle}</p>
+        <p><strong>الاسم:</strong> ${params.name}</p>
+        <p><strong>الإيميل:</strong> ${params.email}</p>
+        <p><strong>الموبايل:</strong> ${params.phone}</p>
+        <p><strong>الشركة:</strong> ${params.company || '—'}</p>
+        <p><strong>الميزانية:</strong> ${params.budget || '—'}</p>
+        <p><strong>التوقيت المتوقع:</strong> ${params.timeline || '—'}</p>
+        <p><strong>الرسالة:</strong></p>
+        <p>${params.message}</p>
+        <p><a href="${APP_URL}/admin/services" style="color:#2E7F7F;text-decoration:none">فتح لوحة الخدمات</a></p>
+      `
+    ),
+  })
+}
+
+export async function sendServiceLeadConfirmationEmail(params: {
+  to: string
+  name: string
+  serviceTitle: string
+}) {
+  await sendEmail({
+    to: params.to,
+    subject: `تم استلام طلبك — ${params.serviceTitle}`,
+    html: shell(
+      'تم استلام طلبك',
+      `
+        <p>مرحبًا ${params.name}، تم استلام طلبك بخصوص <strong>${params.serviceTitle}</strong>.</p>
+        <p>سنراجع التفاصيل ونرد عليك خلال أقرب وقت.</p>
+      `
+    ),
+  })
+}

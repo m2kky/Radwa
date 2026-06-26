@@ -20,7 +20,9 @@ import {
   LogOut,
   FileText,
   Clock,
-  SlidersHorizontal
+  SlidersHorizontal,
+  BookOpen,
+  BriefcaseBusiness
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -32,6 +34,8 @@ const navItems = [
   { href: '/admin/kyc', label: 'طلبات KYC', icon: ShieldCheck },
   { href: '/admin/coupons', label: 'الكوبونات', icon: Tag },
   { href: '/admin/portfolio', label: 'بورتفوليو & دراسات الحالة', icon: FileText },
+  { href: '/admin/guides', label: 'Guides & Templates', icon: BookOpen },
+  { href: '/admin/services', label: 'الخدمات', icon: BriefcaseBusiness },
   { href: '/admin/blog', label: 'المدونة', icon: FileText },
   { href: '/admin/event-types', label: 'أنواع الجلسات', icon: Tag },
   { href: '/admin/availability', label: 'مواعيد التوفر', icon: Clock },

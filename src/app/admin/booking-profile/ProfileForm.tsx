@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from 'react';
 import { updateBookingProfile, BookingProfile } from './actions';
+import MediaUploadField from '@/components/admin/media-upload-field';
 import s from '../Scheduling.module.css';
 
 const TIMEZONES = ['Africa/Cairo', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Tokyo', 'Australia/Sydney'];
@@ -10,6 +11,7 @@ const DATE_FORMATS = ['MMM d, yyyy', 'dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', '
 export default function ProfileForm({ profile }: { profile: BookingProfile }) {
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
 
     const save = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -41,9 +43,16 @@ export default function ProfileForm({ profile }: { profile: BookingProfile }) {
                         </div>
                         <div className={s.inputGroup}>
                             <label className={s.label}>Avatar URL</label>
-                            <input name="avatar_url" defaultValue={profile.avatar_url} className={s.input} placeholder="/avatar.jpg or https://..." />
+                            <MediaUploadField
+                                name="avatar_url"
+                                value={avatarUrl}
+                                onChange={setAvatarUrl}
+                                folder="booking/profile"
+                                inputClassName={s.input}
+                                placeholder="/avatar.jpg أو https://..."
+                            />
                             <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.25rem' }}>
-                                Place your photo in <code>public/avatar.jpg</code> or use a full URL
+                                ارفع صورة مباشرة أو استخدم رابط جاهز.
                             </div>
                         </div>
                     </div>

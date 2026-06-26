@@ -19,15 +19,12 @@ export default function PortfolioCard({ item, index }: { item: PortfolioItem, in
     setMousePosition({ x, y })
   }
 
-  // Determine span size for Bento Grid (make the first item or specific items span 2 columns/rows)
-  const isLarge = index === 0 || index === 5 || index === 8
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={`group relative ${isLarge ? 'md:col-span-2 md:row-span-2' : 'col-span-1 row-span-1'} h-[400px] md:h-auto min-h-[350px] md:min-h-[450px] rounded-3xl overflow-hidden`}
+      className="group relative h-[420px] rounded-3xl overflow-hidden"
     >
       <Link
         ref={cardRef}

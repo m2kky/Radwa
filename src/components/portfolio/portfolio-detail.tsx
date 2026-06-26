@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Tag } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Tag } from 'lucide-react'
 import type { PortfolioItem } from '@/types'
 
 export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
@@ -76,6 +76,18 @@ export default function PortfolioDetail({ item }: { item: PortfolioItem }) {
               </h4>
               <p className="font-medium font-mono">{item.year}</p>
             </div>
+          )}
+
+          {item.drive_url && (
+            <a
+              href={item.drive_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-cyan-glow px-4 py-3 text-sm font-semibold text-cold-black transition-colors hover:bg-cyan-glow/90"
+            >
+              عرض المشروع الكامل
+              <ExternalLink size={15} />
+            </a>
           )}
 
           {item.tags && item.tags.length > 0 && (
