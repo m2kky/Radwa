@@ -13,25 +13,46 @@ const tajawal = Tajawal({
   variable: '--font-tajawal',
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.radwamuhammed.com'
+const siteTitle = 'Radwa Muhammed'
+const siteDescription = 'استراتيجية تسويقية، قوالب احترافية، وكورسات متخصصة للسوق المصري'
+const ogImage = {
+  url: '/og-radwa.jpg',
+  width: 1200,
+  height: 630,
+  alt: 'Radwa Muhammed',
+}
+
 export const metadata: Metadata = {
-  title: { default: 'Radwa Muhammed', template: '%s | Radwa Muhammed' },
-  description: 'استراتيجية تسويقية، قوالب احترافية، وكورسات متخصصة للسوق المصري',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
+  title: { default: siteTitle, template: `%s | ${siteTitle}` },
+  description: siteDescription,
+  applicationName: siteTitle,
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: '/',
+  },
   icons: {
-    icon: '/radwa.jpg',
-    shortcut: '/radwa.jpg',
-    apple: '/radwa.jpg',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/radwa-icon.png', type: 'image/png', sizes: '512x512' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: { url: '/apple-icon.png', type: 'image/png', sizes: '180x180' },
   },
   openGraph: {
-    title: 'Radwa Muhammed',
-    description: 'استراتيجية تسويقية، قوالب احترافية، وكورسات متخصصة للسوق المصري',
-    images: ['/radwa.jpg'],
+    type: 'website',
+    locale: 'ar_EG',
+    url: siteUrl,
+    siteName: siteTitle,
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Radwa Muhammed',
-    description: 'استراتيجية تسويقية، قوالب احترافية، وكورسات متخصصة للسوق المصري',
-    images: ['/radwa.jpg'],
+    title: siteTitle,
+    description: siteDescription,
+    images: ['/og-radwa.jpg'],
   },
 }
 

@@ -11,6 +11,7 @@
 import Link from 'next/link'
 import { AboutHero } from '@/components/about/about-hero'
 import { AboutFocusText } from '@/components/about/about-focus-text'
+import { AboutActionLinks } from '@/components/about/about-action-links'
 import { AboutPhilosophy } from '@/components/about/about-philosophy'
 import { AboutStory } from '@/components/about/about-story'
 import { getSiteContentSettings } from '@/lib/site-content-server'
@@ -28,6 +29,7 @@ export default async function AboutPage() {
         <AboutFocusText />
       </div>
 
+      <AboutActionLinks />
       <AboutPhilosophy />
       <AboutStory milestones={contentSettings.aboutMilestones} />
 
