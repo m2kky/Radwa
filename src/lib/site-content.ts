@@ -30,6 +30,12 @@ export interface SiteGeneralSettings {
   contact_email: string
   contact_phone: string
   contact_whatsapp: string
+  contact_address: string
+  google_maps_url: string
+  social_instagram_url: string
+  social_facebook_url: string
+  social_linkedin_url: string
+  social_tiktok_url: string
   booking_cta_label: string
   booking_cta_href: string
   testimonials_title: string
@@ -125,6 +131,12 @@ export const defaultSiteGeneral: SiteGeneralSettings = {
   contact_email: 'hello@radwamuhammed.com',
   contact_phone: '+20 100 000 0000',
   contact_whatsapp: '+20 100 000 0000',
+  contact_address: 'اسكندرية, مصر',
+  google_maps_url: '',
+  social_instagram_url: '',
+  social_facebook_url: '',
+  social_linkedin_url: '',
+  social_tiktok_url: '',
   booking_cta_label: 'احجزي جلسة',
   booking_cta_href: '/book',
   testimonials_title: 'شركاء النجاح',
@@ -393,6 +405,24 @@ export function parseSiteGeneral(value: unknown): SiteGeneralSettings {
     contact_email: asString(value.contact_email, defaultSiteGeneral.contact_email),
     contact_phone: asString(value.contact_phone, defaultSiteGeneral.contact_phone),
     contact_whatsapp: asString(value.contact_whatsapp, defaultSiteGeneral.contact_whatsapp),
+    contact_address: asString(value.contact_address, defaultSiteGeneral.contact_address),
+    google_maps_url: asString(value.google_maps_url, defaultSiteGeneral.google_maps_url),
+    social_instagram_url: asString(
+      value.social_instagram_url,
+      defaultSiteGeneral.social_instagram_url
+    ),
+    social_facebook_url: asString(
+      value.social_facebook_url,
+      defaultSiteGeneral.social_facebook_url
+    ),
+    social_linkedin_url: asString(
+      value.social_linkedin_url,
+      defaultSiteGeneral.social_linkedin_url
+    ),
+    social_tiktok_url: asString(
+      value.social_tiktok_url,
+      defaultSiteGeneral.social_tiktok_url
+    ),
     booking_cta_label: asString(value.booking_cta_label, defaultSiteGeneral.booking_cta_label),
     booking_cta_href: asString(value.booking_cta_href, defaultSiteGeneral.booking_cta_href),
     testimonials_title: asString(

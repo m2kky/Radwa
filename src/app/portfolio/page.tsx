@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSiteContentSettings } from '@/lib/site-content-server'
 import PortfolioGrid from '@/components/portfolio/portfolio-grid'
+import PortfolioProjectsSection from '@/components/portfolio/portfolio-projects-section'
 import { Target, Grid, CheckSquare, BarChart3 } from 'lucide-react'
+import type { PortfolioItem } from '@/types'
 
 export const metadata = {
   title: 'أعمالي ودراسات الحالة | رضوى محمد',
@@ -11,8 +13,17 @@ export const metadata = {
 // Revalidate page every 60 seconds (ISR)
 export const revalidate = 60
 
-export default async function PortfolioPage() {
+export default async function PortfolioPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ category?: string | string[] }>
+}) {
   const supabase = await createClient()
+  const resolvedSearchParams = await searchParams
+  const initialCategoryParam = resolvedSearchParams?.category
+  const initialCategory = Array.isArray(initialCategoryParam)
+    ? initialCategoryParam[0] || 'all'
+    : initialCategoryParam || 'all'
 
   // Fetch published portfolio items
   const { data: items } = await supabase
@@ -21,8 +32,9 @@ export default async function PortfolioPage() {
     .eq('is_published', true)
     .order('created_at', { ascending: false })
 
-  const caseStudies = items?.filter(i => i.item_type === 'case_study') || []
-  const projects = items?.filter(i => i.item_type === 'project') || []
+  const portfolioItems = (items ?? []) as PortfolioItem[]
+  const caseStudies = portfolioItems.filter(i => i.item_type === 'case_study')
+  const projects = portfolioItems.filter(i => i.item_type === 'project')
 
   // Fetch dynamic sections for Hero and Quote
   const settings = await getSiteContentSettings()
@@ -79,14 +91,7 @@ export default async function PortfolioPage() {
           </div>
         </section>
 
-        {/* Projects Grid Section */}
-        <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">المشاريع البارزة</h2>
-            <p className="text-ice-white/60 text-lg">مجموعة من الأعمال والمشاريع التي نفذتها مؤخراً.</p>
-          </div>
-          <PortfolioGrid items={projects} />
-        </section>
+        <PortfolioProjectsSection projects={projects} initialCategory={initialCategory} />
       </div>
 
       {/* Quote Section (Emerald Aura Gradient, Flexbox Layout) */}

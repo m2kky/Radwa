@@ -30,6 +30,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
       { label: 'أعمالي', href: '/portfolio' },
       { label: 'المدونة', href: '/blog' },
       { label: 'من أنا', href: '/about' },
+      { label: 'تواصل', href: '/contact' },
     ]
 
     useEffect(() => {
@@ -189,6 +190,7 @@ export default function Navbar({ settings }: { settings: SiteGeneralSettings }) 
                     <Link href="/guides" className={styles.link}>Guides</Link>
                     <Link href="/portfolio" className={styles.link}>أعمالي</Link>
                     <Link href="/blog" className={styles.link}>المدونة</Link>
+                    <Link href="/contact" className={styles.link}>تواصل</Link>
                 </div>
 
                 <div className={styles.center}>

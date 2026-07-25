@@ -360,6 +360,77 @@ export default function ContentManager({ initial }: { initial: ContentSettings }
             />
           </div>
           <div>
+            <label className={labelClass}>العنوان</label>
+            <input
+              className={inputClass}
+              value={siteGeneral.contact_address}
+              onChange={(e) =>
+                setSiteGeneral((prev) => ({ ...prev, contact_address: e.target.value }))
+              }
+              placeholder="اسكندرية, مصر"
+            />
+          </div>
+        </div>
+        <div>
+          <label className={labelClass}>رابط Google Maps</label>
+          <input
+            className={inputClass}
+            value={siteGeneral.google_maps_url}
+            onChange={(e) =>
+              setSiteGeneral((prev) => ({ ...prev, google_maps_url: e.target.value }))
+            }
+            placeholder="https://maps.google.com/..."
+            dir="ltr"
+          />
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Instagram URL</label>
+            <input
+              className={inputClass}
+              value={siteGeneral.social_instagram_url}
+              onChange={(e) =>
+                setSiteGeneral((prev) => ({ ...prev, social_instagram_url: e.target.value }))
+              }
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Facebook URL</label>
+            <input
+              className={inputClass}
+              value={siteGeneral.social_facebook_url}
+              onChange={(e) =>
+                setSiteGeneral((prev) => ({ ...prev, social_facebook_url: e.target.value }))
+              }
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>LinkedIn URL</label>
+            <input
+              className={inputClass}
+              value={siteGeneral.social_linkedin_url}
+              onChange={(e) =>
+                setSiteGeneral((prev) => ({ ...prev, social_linkedin_url: e.target.value }))
+              }
+              dir="ltr"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>TikTok URL</label>
+            <input
+              className={inputClass}
+              value={siteGeneral.social_tiktok_url}
+              onChange={(e) =>
+                setSiteGeneral((prev) => ({ ...prev, social_tiktok_url: e.target.value }))
+              }
+              dir="ltr"
+            />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
             <label className={labelClass}>زر حجز الاستشارة</label>
             <input
               className={inputClass}

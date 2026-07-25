@@ -183,6 +183,7 @@ export interface PortfolioItem {
   year: string | null
   role: string | null
   category: string | null
+  subcategories: string[] | null
   tags: string[] | null
   project_url: string | null
   drive_url: string | null

@@ -19,7 +19,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
 
   const [form, setForm] = useState<Partial<PortfolioItem>>({
     slug: '', title: '', description: '', item_type: 'project',
-    thumbnail_url: '', category: '', tags: [], client_name: '',
+    thumbnail_url: '', category: '', subcategories: [], tags: [], client_name: '',
     year: '', role: '', project_url: '', drive_url: '', content_body: '',
     testimonial: '', is_published: false,
     ...defaultValues,
@@ -27,6 +27,9 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
 
   // To handle tags as a comma-separated string in the input
   const [tagsInput, setTagsInput] = useState((defaultValues.tags || []).join(', '))
+  const [subcategoriesInput, setSubcategoriesInput] = useState(
+    (defaultValues.subcategories || []).join(', ')
+  )
 
   const set = (key: keyof PortfolioItem, value: unknown) =>
     setForm(prev => ({ ...prev, [key]: value }))
@@ -42,6 +45,7 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
       const payload = {
         ...form,
         tags: tagsInput.split(',').map(t => t.trim()).filter(Boolean),
+        subcategories: subcategoriesInput.split(',').map(t => t.trim()).filter(Boolean),
         thumbnail_url: form.thumbnail_url || null,
         drive_url: form.drive_url || null,
         metrics: form.metrics ? form.metrics : null,
@@ -121,6 +125,20 @@ export default function PortfolioForm({ id, defaultValues = {} }: Props) {
           <label className={labelClass}>التصنيف</label>
           <input value={form.category || ''} onChange={e => set('category', e.target.value)} className={inputClass} placeholder="مثال: تسويق، تصميم..." />
         </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Sub Categories</label>
+        <input
+          value={subcategoriesInput}
+          onChange={e => setSubcategoriesInput(e.target.value)}
+          className={inputClass}
+          placeholder="food, export, branding"
+          dir="ltr"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          افصل بينهم بفاصلة. القيم دي هتظهر كفلاتر في صفحة الأعمال.
+        </p>
       </div>
 
       <div>

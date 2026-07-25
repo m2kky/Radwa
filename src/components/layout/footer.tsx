@@ -20,7 +20,9 @@ export default function Footer({ settings }: { settings: SiteGeneralSettings }) 
             <p>{settings.contact_email}</p>
             <p>{settings.contact_phone}</p>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">اسكندرية, مصر</p>
+          {settings.contact_address ? (
+            <p className="mt-2 text-xs text-muted-foreground">{settings.contact_address}</p>
+          ) : null}
         </div>
         <div>
           <h3 className="font-semibold mb-3 text-sm">روابط</h3>
@@ -31,6 +33,7 @@ export default function Footer({ settings }: { settings: SiteGeneralSettings }) 
             <li><Link href="/portfolio" className="hover:text-primary">أعمالي</Link></li>
             <li><Link href="/blog" className="hover:text-primary">المدونة</Link></li>
             <li><Link href="/about" className="hover:text-primary">من أنا</Link></li>
+            <li><Link href="/contact" className="hover:text-primary">تواصل معنا</Link></li>
           </ul>
         </div>
         <div>
