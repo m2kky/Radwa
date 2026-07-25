@@ -250,3 +250,14 @@ export interface ServiceLead {
   source_path: string | null
   created_at: string
 }
+
+export interface ContactMessage {
+  id: string
+  name: string
+  email: string
+  company: string | null
+  service: string
+  message: string
+  source: string | null
+  created_at: string
+}
